@@ -16,8 +16,6 @@ class Instruction():
 
     def print_instr(self):
         raise NotImplementedError()
-    
-    
 
 
 class LWInstr(Instruction):
@@ -46,9 +44,11 @@ class LDInstr(Instruction):
     def print_instr(self):
         s = ""
         if self.have_label:
-            s = "{}: {} {}, {}".format(self.have_label, constants.LD_INSTR, self.src_op, self.dest_op)
+            s = "{}: {} {}, {}".format(
+                self.have_label, constants.LD_INSTR, self.src_op, self.dest_op)
         else:
-            s = "{} {}, {}".format(constants.LD_INSTR, self.src_op, self.dest_op)
+            s = "{} {}, {}".format(
+                constants.LD_INSTR, self.src_op, self.dest_op)
         print(s)
 
 
@@ -66,15 +66,17 @@ class ADDDInstr(Instruction):
         self.decode_instr(args)
 
     def decode_instr(self, args):
-        self.src_op, self.dest_op , self.third_op = utils.parse_args(args)
+        self.src_op, self.dest_op, self.third_op = utils.parse_args(args)
         self.print_instr()
 
     def print_instr(self):
         s = ""
         if self.have_label:
-            s = "{}: {} {}, {}, {}".format(self.have_label, constants.ADDD_INSTR, self.src_op, self.dest_op, self.third_op)
+            s = "{}: {} {}, {}, {}".format(
+                self.have_label, constants.ADDD_INSTR, self.src_op, self.dest_op, self.third_op)
         else:
-            s = "{} {}, {}, {}".format(constants.ADDD_INSTR, self.src_op, self.dest_op, self.third_op)
+            s = "{} {}, {}, {}".format(
+                constants.ADDD_INSTR, self.src_op, self.dest_op, self.third_op)
         print(s)
 
 

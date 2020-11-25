@@ -25,7 +25,8 @@ class CPU:
             if val:
                 temp = val.split(":")
                 fp_unit = temp[0].strip().lower()
-                n, latency = list(map(lambda x: int(x.strip()), temp[1].split(",")))
+                n, latency = list(
+                    map(lambda x: int(x.strip()), temp[1].split(",")))
                 fp_unit_to_add = FPType.IntALU
                 if "adder" in fp_unit:
                     fp_unit_to_add = FPType.FPAdder

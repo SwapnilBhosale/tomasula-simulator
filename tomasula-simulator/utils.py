@@ -12,7 +12,7 @@ def get_instruction(inst):
     if inst:
         if " " in inst:
             label = None
-            if ":" in inst:         #label
+            if ":" in inst:  # label
                 i = inst.index(":")
                 label = inst[:i].strip()
                 inst = inst[i+2:]
@@ -24,7 +24,7 @@ def get_instruction(inst):
             elif "L.D" == temp:
                 res = instr.LDInstr(args, have_label=label)
             elif "ADD.D" in temp:
-                res =  instr.ADDDInstr(args, have_label=label)
+                res = instr.ADDDInstr(args, have_label=label)
         else:
             res = instr.HLTInstr()
     return res
@@ -32,6 +32,7 @@ def get_instruction(inst):
 
 def get_reg_index_from_str(src_reg):
     return src_reg[1]
+
 
 def parse_args(args):
     return list(map(lambda x: x.strip(), args.split(",")))
