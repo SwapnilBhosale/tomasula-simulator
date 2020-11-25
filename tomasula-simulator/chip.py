@@ -1,5 +1,5 @@
 import constants
-
+import utils
 
 class Chip():
 
@@ -14,7 +14,8 @@ class Chip():
         inst = instructions.split("\n")
         init_address = constants.INSTRUCTION_START_ADDRESS
         for val in inst:
-            self.main_memory[init_address] = val
+            instr = utils.get_instruction(val)
+            self.main_memory[init_address] = instr
             init_address += 1
         self.print_memory()
     
