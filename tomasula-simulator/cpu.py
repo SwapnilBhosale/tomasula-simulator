@@ -22,9 +22,10 @@ class CPU:
     def __load_config(self, configs):
         config = configs.split("\n")
         for val in config:
-            temp  = val.split(":")
+            temp = val.split(":")
             fp_unit = temp[0].strip().lower()
-            n, latency = list(map(lambda x: int(x.strip()), temp[1].split(",")))
+            n, latency = list(
+                map(lambda x: int(x.strip()), temp[1].split(",")))
             fp_unit_to_add = FPType.IntALU
             if "adder" in fp_unit:
                 fp_unit_to_add = FPType.FPAdder
@@ -37,18 +38,18 @@ class CPU:
             else:
                 print("Error: Wrong functional unit type: {}".format(fp_unit))
             self.add_fp_unit(fp_unit_to_add, n, latency)
-        self.add_fp_unit(fp_unit_to_add, 1, 1)           #integer ALU is not given in config, so add here to the CPU
-    
-        
+        # integer ALU is not given in config, so add here to the CPU
+        self.add_fp_unit(fp_unit_to_add, 1, 1)
 
     def add_fp_unit(self, fp_type, n, latency):
         if fp_type == FPType.FPAdder:
-            self.FPAdder = [FPAdder("FP-Adder" + str(i+1), latency) for i in range(n)]
+            self.FPAdder = [FPAdder("FP-Adder" + str(i+1), latency)
+                            for i in range(n)]
         if fp_type == FPType.FPDiv:
-            self.FPDivider = [FPDivider("FP-Divider" + str(i+1), latency) for i in range(n)]
+            self.FPDivider = [
+                FPDivider("FP-Divider" + str(i+1), latency) for i in range(n)]
         if fp_type == FPType.FPMul:
-            self.FPDivider = [FP_Multiply("FP-Multiplyer" + str(i+1), latency) for i in range(n)]
+            self.FPDivider = [FP_Multiply(
+                "FP-Multiplyer" + str(i+1), latency) for i in range(n)]
         if fp_type == FPType.IntALU:
             self.IntALU = [IntAlu("ALU" + str(i+1), latency) for i in range(n)]
-
-    

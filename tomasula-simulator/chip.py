@@ -1,6 +1,7 @@
 import constants
 import utils
 
+
 class Chip():
 
     def __init__(self, cpu, instructions, data):
@@ -9,7 +10,6 @@ class Chip():
         self.__load_instructions(instructions)
         self.__load_data(data)
 
-    
     def __load_instructions(self, instructions):
         inst = instructions.split("\n")
         init_address = constants.INSTRUCTION_START_ADDRESS
@@ -18,9 +18,9 @@ class Chip():
             self.main_memory[init_address] = instr
             init_address += 1
         self.print_memory()
-    
+
     def print_memory(self):
-        print("memory is: ",self.main_memory)
+        print("memory is: ", self.main_memory)
 
     def __load_data(self, datas):
         data = datas.split("\n")

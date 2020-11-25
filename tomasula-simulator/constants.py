@@ -1,4 +1,5 @@
 
+from enum import Enum
 INSTRUCTION_START_ADDRESS = 0
 DATA_START_ADDRESS = 32
 MAIN_MEMORY_SIZE = 64
@@ -7,9 +8,6 @@ NUM_REGISTERS = 32
 
 LI_INSTR = "LI"
 HLT_INSTR = "HLT"
-
-
-from enum import Enum
 
 
 class FPType(Enum):

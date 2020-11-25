@@ -1,7 +1,6 @@
 import sys
 
 
-
 def main():
     args = len(sys.argv)
     if args != 4:

@@ -6,8 +6,5 @@ class FUnit:
         self.name = name
         self.exec_time = exec_time
 
-    
     def execute(self):
         raise NotImplementedError
-
-    

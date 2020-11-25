@@ -9,6 +9,7 @@ import utils
 
 from chip import Chip
 
+
 class App:
 
     def __init__(self):
@@ -20,19 +21,15 @@ class App:
         self.chip = None
         self.init_chip()
 
-
     def init_chip(self):
         print("inside init chip")
         data_file = utils.load_bin_file(self.data_file)
         inst_file = utils.load_bin_file(self.inst_file)
         config_file = utils.load_bin_file(self.config_file)
         cpu = CPU(config_file)
-        self.chip =  Chip(cpu, inst_file, data_file)
-
-
+        self.chip = Chip(cpu, inst_file, data_file)
 
 
 app = App()
 
 app.init_chip()
-
