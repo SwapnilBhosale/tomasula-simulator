@@ -5,6 +5,7 @@ from .fp_divider import FPDivider
 from .fp_multiply import FP_Multiply
 from .int_alu import IntAlu
 from fp_type import FPType
+import utils
 
 class App:
 
@@ -19,16 +20,12 @@ class App:
 
 
     def init_cpu(self):
-        self.cpu = CPU()
-        with open(self.config_file) as f:
-            data = f.read().split("\n")
-            for val in data:
-                if "adder" in val:
-                    n, cycles = val.split(":")[1].split(",")
-                        self.cpu.add_fp_unit()
+        data_file = utils.load_bin_file(self.data_file)
+        inst_file = utils.load_bin_file(self.inst_file)
+        config_file = utils.load_bin_file(self.config_file)
+        self.cpu = CPU(data_file, inst_file, config_file)
 
 
 
 
-    def __load_bin_file(self):
-        pass
+

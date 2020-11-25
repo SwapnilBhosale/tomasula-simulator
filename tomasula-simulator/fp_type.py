@@ -7,4 +7,5 @@ class FPType(Enum):
     FPAdder = 1
     FPMul = 2
     FPDiv = 3
+    ICache = 4
     
