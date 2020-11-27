@@ -18,6 +18,10 @@ class CPU:
         self.fp_mul = None
         self.reg_pc = constants.PC_START_ADD
         self.__load_config(config)
+        self.__add_d_cache()
+
+    def __add_d_cache(self):
+        self.add_fp_unit(FPType.DCache, 2, 4)
 
     def __load_config(self, configs):
         config = configs.split("\n")
@@ -54,3 +58,5 @@ class CPU:
                 "FP-Multiplyer" + str(i+1), latency) for i in range(n)]
         if fp_type == FPType.IntALU:
             self.IntALU = [IntAlu("ALU" + str(i+1), latency) for i in range(n)]
+        if fp_type == FPType.ICache:
+            self.Ica

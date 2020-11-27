@@ -8,3 +8,4 @@ class FPType(Enum):
     FPMul = 2
     FPDiv = 3
     ICache = 4
+    DCache = 5
