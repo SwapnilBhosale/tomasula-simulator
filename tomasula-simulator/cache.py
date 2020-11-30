@@ -57,6 +57,6 @@ class DCache(SetAssociateCache):
         super().__init__(num_of_sets, block_size_words)
 
 
-c = ICache(4, 4)
-print(c.get_index_bits())
-print(c.get_byte_offset())
+#c = ICache(4, 4)
+# print(c.get_index_bits())
+# print(c.get_byte_offset())

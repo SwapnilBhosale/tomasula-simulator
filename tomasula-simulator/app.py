@@ -29,7 +29,17 @@ class App:
         cpu = CPU(config_file)
         self.chip = Chip(cpu, inst_file, data_file)
 
+    def start_cpu(self):
+        cycle_no = 1
+        print("**************** before starting cpu: ", self.chip.cpu.__dict__)
+        while True:
+            print("****** Running cycle number: {}".format(cycle_no))
+            res = self.chip.execute(cycle_no)
+            cycle_no += 1
+
+            if res == -1:
+                break
+
 
 app = App()
-
-app.init_chip()
+app.start_cpu()

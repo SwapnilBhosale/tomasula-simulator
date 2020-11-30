@@ -1,5 +1,6 @@
 import constants
 import utils
+import score_board
 
 
 class Chip():
@@ -9,6 +10,7 @@ class Chip():
         self.main_memory = [0] * constants.MAIN_MEMORY_SIZE
         self.__load_instructions(instructions)
         self.__load_data(data)
+        self.sb = score_board.ScoreBoard(cpu)
 
     def __load_instructions(self, instructions):
         inst = instructions.split("\n")
@@ -31,3 +33,10 @@ class Chip():
                 self.main_memory[init_address] = int(val, 2)
                 init_address += 1
         self.print_memory()
+
+    def execute(self, cycle_no):
+        self.cpu.set_clock(cycle_no)
+        inst = self.main_memory[self.cpu.reg_pc]
+        self.sb.fetch_stage(inst)
+        self.sb.issue_stage()
+        return 1
