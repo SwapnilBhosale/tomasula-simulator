@@ -14,6 +14,10 @@ class Instruction():
         self.waw_hazard = []
         self.struct_hazard = []
         self.res = []
+        self.total_cycles = 0
+
+    def __repr__(self):
+        return self.print_instr(is_print=False)
 
     def decode_instr(self, args):
         raise NotImplementedError()
@@ -24,7 +28,7 @@ class Instruction():
     def print_instr(self, is_print=True):
         if type(self) == HLTInstr:
             print("HLT")
-            return
+            return ""
         args = [self.src_op, self.dest_op]
         if self.third_op is not None:
             args.append(self.third_op)
@@ -42,6 +46,9 @@ class Instruction():
 
     def __eq__(self, other):
         return self.inst_str == other.inst_str and self.src_op == other.src_op and self.dest_op == other.dest_op
+
+    def is_load_store_instr(self):
+        return self.inst_str == constants.LW_INSTR or self.inst_str == constants.LD_INSTR or self.inst_str == constants.SW_INSTR or self.inst_str == constants.SD_INSTR
 
 
 class LWInstr(Instruction):

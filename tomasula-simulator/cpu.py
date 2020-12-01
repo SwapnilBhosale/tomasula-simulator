@@ -84,8 +84,8 @@ class CPU:
         assigned_adder, taken = self.int_alu[0]
         if taken:
             if assigned_adder.instr.inst_str != constants.SW_INSTR or assigned_adder.instr.inst_str != constants.SD_INSTR:
-                res = instr != assigned_adder.instr and (
-                    reg == assigned_adder.instr.src_op)
+                res = (
+                    instr != assigned_adder.instr and reg in assigned_adder.instr.src_op)
         return res
 
     def __check_fp_adder(self, instr, reg):
@@ -107,4 +107,5 @@ class CPU:
         return True in raw_hazards
 
     def is_raw_hazard(self, instr, reg):
+        print("checking for reg: {} instr: {}".format(reg, instr))
         return self.__check_int_alu(instr, reg) or self.__check_fp_adder(instr, reg) or self.__check_fp_mul(instr, reg) or self.__check_fp_div(instr, reg)
