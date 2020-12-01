@@ -10,6 +10,10 @@ class FUnit:
 
     def set_instruction(self, instr):
         self.instr = instr
+        if instr.exec_stage_cycle:
+            self.remain_time = instr.exec_stage_cycle
+        else:
+            self.remain_time = self.exec_time
 
     def execute(self):
         raise NotImplementedError

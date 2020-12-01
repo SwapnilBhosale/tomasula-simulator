@@ -5,9 +5,8 @@ from fp_divider import FPDivider
 from fp_multiply import FP_Multiply
 from int_alu import IntAlu
 from fp_type import FPType
-import utils
-
 from chip import Chip
+import utils
 
 
 class App:
@@ -31,14 +30,17 @@ class App:
 
     def start_cpu(self):
         cycle_no = 1
-        print("**************** before starting cpu: ", self.chip.cpu.__dict__)
+        #print("**************** before starting cpu: ", self.chip.cpu.__dict__)
         while True:
-            print("****** Running cycle number: {}".format(cycle_no))
+            print("-------------------")
+            print("Running cycle number: {}".format(cycle_no))
             res = self.chip.execute(cycle_no)
             cycle_no += 1
 
             if res == -1:
                 break
+
+            print("-------------------\n\n")
 
 
 app = App()
