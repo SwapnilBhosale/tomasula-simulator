@@ -153,12 +153,14 @@ class ScoreBoard:
             addr = self.cpu.gpr[reg2][0] + \
                 int(self.instr.dest_op[:r2_open_ind])
             data_block = self.dcache.fetch_data(addr + offset)
-            self.exe_cycles = data_block.clock_cycles
+            self.exe_cycles += data_block.clock_cycles
             if self.instr.inst_str == constants.LW_INSTR or self.instr.inst_str == constants.SW_INSTR:
                 self.exe_cycles -= 1
             if self.instr.inst_str == constants.SW_INSTR:
                 self.dcache.update_val(addr + offset, self.cpu.gpr[reg1][0])
             self.is_d_cache_hit = True
+            print("############## loaded from clock: {} cache: updated clock to: {} {}- {}".format(
+                self.clock, self.instr, self.exe_cycles, data_block.clock_cycles))
             return data_block.data
         return 0
 
@@ -207,7 +209,7 @@ class ScoreBoard:
 
     def is_war_hazard(self, instr, pc, temp=None):
         if temp:
-            return True
+            return False
 
         if instr.dest_op:
             is_gpr = 'R' in instr.dest_op
@@ -271,7 +273,7 @@ class ScoreBoard:
                         return i
                     else:
                         return pc
-        self.cpu.is_branch = 2
+        self.cpu.is_branch = True
         return temp
 
     def set_reg_write(self, reg, pc, is_gpr=True):
@@ -281,12 +283,17 @@ class ScoreBoard:
             self.cpu.fpr[reg][1] = pc
 
     def set_reg_read(self, reg, is_gpr=True):
-        if is_gpr:
-            self.cpu.gpr[reg][2] = 1
-        else:
-            self.cpu.fpr[reg][2] = 1
+        print("************* Reg ", reg, " instr: ", self.instr)
+
+        if reg > 0:
+            if is_gpr:
+                self.cpu.gpr[reg][2] = 1
+            else:
+                self.cpu.fpr[reg][2] = 1
 
     def update(self, clk_cnt, pc_cnt, war_pc, flag):
+
+        # print()
         if self.finish:
             self.is_et_push(self.curr_stage)
 
@@ -300,11 +307,11 @@ class ScoreBoard:
         self.should_push = False
 
         if self.curr_stage == 0:
+            print("*********  fetch : {}- {}".format(self.instr, clk_cnt))
             if flag:
                 self.branch_taken = True
             self.fetch_cycle -= 1
 
-            print("*********  ", self.instr)
             if not self.cpu.issue and self.fetch_cycle <= 0 and self.instr.inst_str == constants.HLT_INSTR:
                 print("fetched: ", self.instr)
                 self.finish = True
@@ -320,9 +327,10 @@ class ScoreBoard:
                 self.is_next_free = True
 
         elif self.curr_stage == 1:
+            print("curr stage is issue: {}- {}".format(type(self.instr), clk_cnt))
             self.cpu.issue = True
             self.waw_hazard = self.is_waw_hazard(self.instr)
-            has_res = True
+            has_res = self.is_fp_free(self.instr)
 
             if self.instr.is_branch_instr():
                 self.finish = True
@@ -351,6 +359,7 @@ class ScoreBoard:
                 self.issue = clk_cnt
                 self.is_next_free = True
         elif self.curr_stage == 2:
+            print("curr stage is read: {}- {}".format(self.instr, clk_cnt))
             if self.instr.inst_str == constants.HLT_INSTR or self.branch_taken:
                 self.finish = True
                 self.cpu.issue = False
@@ -360,48 +369,55 @@ class ScoreBoard:
                 self.curr_stage = 4
                 self.next_stage = 5
                 return pc_cnt
-            else:
-                if self.instr.is_branch_instr():
-                    self.set_fp_busy(self.instr)
-                if self.instr.inst_str == constants.BNE_INSTR or self.instr.inst_str == constants.BEQ_INSTR or self.instr.inst_str == constants.SW_INSTR or self.instr.inst_str == constants.SD_INSTR:
-                    self.war_hazard = self.is_war_hazard(
-                        self.instr, war_pc, True)
-                else:
-                    self.war_hazard = self.is_war_hazard(self.instr, war_pc)
-                if self.war_hazard:
-                    self.h_war = 'Y'
-                if not self.war_hazard:
-                    self.finish = True
-                    self.cpu.fu_branch = False
-                    self.read = clk_cnt
-                    r2_is_gpr = True if self.instr.dest_op and "R" in self.instr.dest_op else False
-                    r3_is_gpr = True if self.instr.third_op and "R" in self.instr.third_op else False
-                    self.set_reg_read(self.instr.get_r2(), r2_is_gpr)
-                    self.set_reg_read(self.instr.get_r3(), r3_is_gpr)
-                    self.is_next_free = True
-                    if not self.is_d_cache_hit:
-                        data = self.check_and_load_from_cache(0)
-                        self.instr.execute_instr(self.cpu, data, self.dcache)
-                        self.is_d_cache_hit = True
-                        if self.instr.inst_str == constants.LD_INSTR or self.instr.inst_str == constants.SD_INSTR:
-                            self.is_d_cache_hit = False
-        elif self.curr_stage == 3:
+
             if self.instr.is_branch_instr():
+                self.set_fp_busy(self.instr)
+            if self.instr.inst_str == constants.BNE_INSTR or self.instr.inst_str == constants.BEQ_INSTR or self.instr.inst_str == constants.SW_INSTR or self.instr.inst_str == constants.SD_INSTR:
+                self.war_hazard = self.is_war_hazard(
+                    self.instr, war_pc, True)
+            else:
+                self.war_hazard = self.is_war_hazard(self.instr, war_pc)
+            if self.war_hazard:
+                self.h_war = 'Y'
+            if not self.war_hazard:
+                self.finish = True
+                self.cpu.fu_branch = False
+                self.read = clk_cnt
+                r2_is_gpr = True if self.instr.dest_op and "R" in self.instr.dest_op else False
+                r3_is_gpr = True if self.instr.third_op and "R" in self.instr.third_op else False
+                self.set_reg_read(self.instr.get_r2(), r2_is_gpr)
+                print("!!!!!!!!!!!! instr  ", self.instr)
+                self.set_reg_read(self.instr.get_r3(), r3_is_gpr)
+                self.is_next_free = True
+                if not self.is_d_cache_hit:
+                    data = self.check_and_load_from_cache(0)
+                    print("before executing !!!!!!!!!!!!!!!!!")
+                    self.instr.execute_instr(self.cpu, data, self.dcache)
+                    self.is_d_cache_hit = True
+                    if self.instr.inst_str == constants.LD_INSTR or self.instr.inst_str == constants.SD_INSTR:
+                        self.is_d_cache_hit = False
+        elif self.curr_stage == 3:
+            print("curr stage is exec: {}- {} {}".format(self.instr,
+                                                         clk_cnt, self.exe_cycles))
+            if self.instr.is_branch_instr():
+                print("*********************** this should run:0 ")
                 self.cpu.is_branch = True
             if not self.is_d_cache_hit:
+                print("*********************** this should run:2 ")
                 self.check_and_load_from_cache(4)
                 self.is_d_cache_hit = True
                 self.exe_cycles -= 1
             if self.exe_cycles == 1:
+                print("*********************** this should run3: ")
                 self.update_reg_flags(self.instr)
                 self.finish = True
                 self.execute = clk_cnt
                 self.is_next_free = True
                 return pc_cnt
-            else:
-                self.exe_cycles -= 1
+            self.exe_cycles -= 1
 
         elif self.curr_stage == 4:
+            print("curr stage is wb: {}- {}".format(self.instr, clk_cnt))
             if self.raw_hazard:
                 self.h_raw = 'Y'
             else:

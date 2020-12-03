@@ -11,8 +11,8 @@ class DCache:
         self.cache_size = constants.D_CACHE_SIZE
         self.block_size = constants.WORD_SIZE_IN_BYTES
         self.no_of_sets = constants.NO_OF_SETS_D_CACHE
-        self.cache = [[]]*self.cache_size
-
+        self.cache = [[0 for i in range(self.block_size)]
+                      for j in range(self.cache_size)]
         self.valid = [False] * self.cache_size
         self.lru_cnt = [False] * self.cache_size
         self.dirty = [False] * self.cache_size
@@ -36,42 +36,46 @@ class DCache:
             busy_cnt = self.memory_bus.get_busy_until(
             ) - self.clock_mgr.get_clock() + clock_cycle
             self.memory_bus.set_busy_until(
-                self.memory_bus.getBusyTime() + clock_cycle)
+                self.memory_bus.get_busy_until() + clock_cycle)
             return busy_cnt
 
     def fetch_data(self, addr):
+        print("addr: ", addr)
         temp = addr
         addr = addr >> 2
         # extract last 2 bits
         offset_mask = 3
 
         block_offset = addr & offset_mask
-        temp1 = addr >> 2
-        set_no = temp1 % 2
+        address = addr >> 2
+        set_no = address % 2
 
         idx = set_no * self.no_of_sets
+
+        print("idx: {} , set: {} , block_offset: {}".format(
+            idx, set_no, block_offset))
         temp_lru_cnt = [False] * 4
         temp_lru_cnt[idx] = self.lru_cnt[idx]
         temp_lru_cnt[idx+1] = self.lru_cnt[idx+1]
         self.lru_cnt[idx] = False
         self.lru_cnt[idx+1] = False
         self.requests += 1
-        if self.valid[idx] and self.tag[idx] == addr:
+        if self.valid[idx] and self.tag[idx] == address:
             self.lru_cnt[idx] = True
             self.hits += 1
             return DCacheInfo(self.cache[idx][block_offset], 1)
-        if self.valid[idx+1] and self.tag[idx+1] == addr:
+        if self.valid[idx+1] and self.tag[idx+1] == address:
             self.lru_cnt[idx+1] = True
             self.hits += 1
             return DCacheInfo(self.cache[idx+1][block_offset], 1)
 
         data = self.memory.fetch_data(temp)
-
+        print("########################### $$$$$$$$$$$$$$$$$$$$$$ data fetched: ", data)
         if not self.valid[idx]:
             self.valid[idx] = True
             self.lru_cnt[idx] = True
             self.dirty[idx] = False
-            self.tag[idx] = addr
+            self.tag[idx] = address
             for i in range(len(data)):
                 self.cache[idx][i] = data[i]
             return DCacheInfo(self.cache[idx][block_offset], self.num_cycle_needed(12)+1)
@@ -79,7 +83,7 @@ class DCache:
             self.valid[idx+1] = True
             self.lru_cnt[idx+1] = True
             self.dirty[idx+1] = False
-            self.tag[idx+1] = addr
+            self.tag[idx+1] = address
             for i in range(len(data)):
                 self.cache[idx+1][i] = data[i]
             return DCacheInfo(self.cache[idx+1][block_offset], self.num_cycle_needed(12)+1)
@@ -91,7 +95,7 @@ class DCache:
                 extra_cycle = 12
                 self.memory.update_data(temp, self.cache[idx])
             self.dirty[idx] = False
-            self.tag[idx] = addr
+            self.tag[idx] = address
             for i in range(len(data)):
                 self.cache[idx][i] = data[i]
             return DCacheInfo(self.cache[idx][block_offset], self.num_cycle_needed(12+extra_cycle)+1)
@@ -103,7 +107,7 @@ class DCache:
                 extra_cycle = 12
                 self.memory.update_data(temp, self.cache[idx])
             self.dirty[idx+1] = False
-            self.tag[idx] = addr
+            self.tag[idx] = address
             for i in range(len(data)):
                 self.cache[idx][i] = data[i]
             return DCacheInfo(self.cache[idx+1][block_offset], self.num_cycle_needed(12+extra_cycle)+1)

@@ -11,9 +11,11 @@ from d_cache import DCache
 class CPU:
 
     def __init__(self, config_path):
-        self.gpr = [[0, 0, 0]] * constants.NUM_REGISTERS
-        self.fpr = [[0, 0, 0]] * constants.NUM_REGISTERS
-        self.is_branch = 0
+        self.gpr = [[0 for i in range(3)]
+                    for j in range(constants.NUM_REGISTERS+1)]
+        self.fpr = [[0 for i in range(3)]
+                    for j in range(constants.NUM_REGISTERS+1)]
+        self.is_branch = False
 
         self.fetch = False
         self.issue = False

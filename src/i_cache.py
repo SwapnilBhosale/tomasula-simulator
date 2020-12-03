@@ -39,7 +39,7 @@ class ICache:
             busy_cnt = self.memory_bus.get_busy_until(
             ) - self.clock_mgr.get_clock() + clock_cycle
             self.memory_bus.set_busy_until(
-                self.memory_bus.getBusyTime() + clock_cycle)
+                self.memory_bus.get_busy_until() + clock_cycle)
             return busy_cnt
 
     def fetch_instruction(self, addr):

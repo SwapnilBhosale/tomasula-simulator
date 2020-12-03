@@ -19,10 +19,10 @@ class CDC600:
         #self.config_file = args[3]
         #self.res_file = args[4]
 
-        self.inst_file = "..//tc//test_case_2//inst.txt"
-        self.data_file = "..//tc//test_case_2//data.txt"
-        self.config_file = "..//tc//test_case_2//config.txt"
-        self.res_file = "..//tc//test_case_2//final_res.txt"
+        self.inst_file = "..//tc//tc1//inst.txt"
+        self.data_file = "..//tc//tc1//data.txt"
+        self.config_file = "..//tc//tc1//config.txt"
+        self.res_file = "..//tc//tc1//final_res.txt"
         self.instructions = []
 
         self.scoreboards = []

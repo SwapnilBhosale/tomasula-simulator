@@ -27,8 +27,8 @@ class Instruction():
 
     def print_instr(self, is_print=True):
         if type(self) == HLTInstr:
-            print("HLT")
-            return ""
+            # print("HLT")
+            return "HLT"
         args = [self.src_op, self.dest_op]
         if self.third_op is not None:
             args.append(self.third_op)
@@ -337,6 +337,9 @@ class DADDIInstr(Instruction):
     def get_r2(self):
         return int(self.dest_op[1:])
 
+    def get_r3(self):
+        return -1
+
 
 class DSUBInstr(Instruction):
     def __init__(self, args, have_label=None):
@@ -526,9 +529,11 @@ class LIInstr(Instruction):
         # self.print_instr()
 
     def execute_instr(self, cpu, data, dcache):
+        print("before executing: ", cpu.gpr)
         r1 = self.get_r1()
         r2 = int(self.dest_op)
         cpu.gpr[r1][0] = r2
+        print("************ executed instruction LI: ", cpu.gpr, " r2: ", r2)
 
     def get_r1(self):
         return int(self.src_op[1:])
@@ -617,7 +622,7 @@ class BNEInstr(Instruction):
         return int(self.dest_op[1:])
 
     def get_r3(self):
-        return self.third_op
+        return -1
 
 
 class BEQInstr(Instruction):
@@ -643,7 +648,7 @@ class BEQInstr(Instruction):
         return int(self.dest_op[1:])
 
     def get_r3(self):
-        return self.third_op
+        return -1
 
 
 class JInstr(Instruction):

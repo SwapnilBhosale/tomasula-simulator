@@ -15,9 +15,21 @@ class Cache():
 
 class SetAssociateCache(Cache):
 
-    def __init__(self, no_of_sets, block_size_words):
-        self.no_of_sets = no_of_sets
-        self.block_size_words = block_size_words
+    def __init__(self, clock_mgr, memory, memory_bus):
+        self.no_of_sets = 2
+        self.block_size_words = 4
+        self.cache_size = 4
+        self.total_req = 0
+        self.total_hits = 0
+        self.valid_bits = [0] * self.cache_size
+        self.lru_count = [0] * self.cache_size
+        self.dirty = [0] * self.cache_size
+        self.tag = [0] * self.cache_size
+        self.clock_mgr = clock_mgr
+        self.memory = memory
+        self.memory_bus = memory_bus
+
+        self.cache = [[0] * self.block_size_words] * self.cache_size
 
 
 class DirectCache(Cache):

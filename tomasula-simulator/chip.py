@@ -7,7 +7,7 @@ class Chip():
 
     def __init__(self, cpu, instructions, data):
         self.cpu = cpu
-        self.main_memory = [0] * constants.MAIN_MEMORY_SIZE
+        self.instr = [0] * constants.MAIN_MEMORY_SIZE
         self.main_memory_access_time = 3
         self.__load_instructions(instructions)
         self.__load_data(data)
