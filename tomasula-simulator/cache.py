@@ -3,6 +3,9 @@ import math
 
 
 class Cache():
+    def __init(self):
+        self.hit_time = 1
+
     def put_in_cache(self, addr, data):
         raise NotImplementedError()
 
@@ -21,7 +24,7 @@ class DirectCache(Cache):
     def __init__(self, num_of_blocks, block_size_words):
         self.num_of_blocks = num_of_blocks
         self.block_size_words = block_size_words
-        self.cache = [] * num_of_blocks
+        self.cache = {block_no: None for block_no in self.num_of_blocks}
         self.byte_offset = None
         self.no_index_bits = None
 
@@ -49,6 +52,15 @@ class ICache(DirectCache):
 
     def __init__(self, num_of_blocks, block_size_words):
         super().__init__(num_of_blocks, block_size_words)
+
+    def put_in_cache(self, addr, data):
+        block_no = addr // 4
+        self.cache[block_no] = data
+
+    def get_from_cache(self, addr):
+        block_no = addr // 4
+        if block_no in self.cache:
+            self.cache[block_no][addr % self.block_size_words]
 
 
 class DCache(SetAssociateCache):

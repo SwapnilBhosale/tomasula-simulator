@@ -1,0 +1,191 @@
+
+import constants
+
+
+class DCache:
+
+    def __init__(self, clock_mgr, memory_bus, memory):
+        self.clock_mgr = clock_mgr
+        self.memory_bus = memory_bus
+        self.memory = memory
+        self.cache_size = constants.D_CACHE_SIZE
+        self.block_size = constants.WORD_SIZE_IN_BYTES
+        self.no_of_sets = constants.NO_OF_SETS_D_CACHE
+        self.cache = [[]]*self.cache_size
+
+        self.valid = [False] * self.cache_size
+        self.lru_cnt = [False] * self.cache_size
+        self.dirty = [False] * self.cache_size
+        self.tag = [0] * self.cache_size
+
+        self.requests = 0
+        self.hits = 0
+
+    def stats_total_requests(self):
+        return self.requests
+
+    def stats_total_hits(self):
+        return self.hits
+
+    def num_cycle_needed(self, clock_cycle):
+        if not self.memory_bus.is_busy(self.clock_mgr.get_clock()):
+            self.memory_bus.set_busy_until(
+                self.clock_mgr.get_clock() + clock_cycle)
+            return clock_cycle
+        else:
+            busy_cnt = self.memory_bus.get_busy_until(
+            ) - self.clock_mgr.get_clock() + clock_cycle
+            self.memory_bus.set_busy_until(
+                self.memory_bus.getBusyTime() + clock_cycle)
+            return busy_cnt
+
+    def fetch_data(self, addr):
+        temp = addr
+        addr = addr >> 2
+        # extract last 2 bits
+        offset_mask = 3
+
+        block_offset = addr & offset_mask
+        temp1 = addr >> 2
+        set_no = temp1 % 2
+
+        idx = set_no * self.no_of_sets
+        temp_lru_cnt = [False] * 4
+        temp_lru_cnt[idx] = self.lru_cnt[idx]
+        temp_lru_cnt[idx+1] = self.lru_cnt[idx+1]
+        self.lru_cnt[idx] = False
+        self.lru_cnt[idx+1] = False
+        self.requests += 1
+        if self.valid[idx] and self.tag[idx] == addr:
+            self.lru_cnt[idx] = True
+            self.hits += 1
+            return DCacheInfo(self.cache[idx][block_offset], 1)
+        if self.valid[idx+1] and self.tag[idx+1] == addr:
+            self.lru_cnt[idx+1] = True
+            self.hits += 1
+            return DCacheInfo(self.cache[idx+1][block_offset], 1)
+
+        data = self.memory.fetch_data(temp)
+
+        if not self.valid[idx]:
+            self.valid[idx] = True
+            self.lru_cnt[idx] = True
+            self.dirty[idx] = False
+            self.tag[idx] = addr
+            for i in range(len(data)):
+                self.cache[idx][i] = data[i]
+            return DCacheInfo(self.cache[idx][block_offset], self.num_cycle_needed(12)+1)
+        if not self.valid[idx+1]:
+            self.valid[idx+1] = True
+            self.lru_cnt[idx+1] = True
+            self.dirty[idx+1] = False
+            self.tag[idx+1] = addr
+            for i in range(len(data)):
+                self.cache[idx+1][i] = data[i]
+            return DCacheInfo(self.cache[idx+1][block_offset], self.num_cycle_needed(12)+1)
+        if not temp_lru_cnt[idx]:
+            self.valid[idx] = True
+            self.lru_cnt[idx] = True
+            extra_cycle = 0
+            if self.dirty[idx]:
+                extra_cycle = 12
+                self.memory.update_data(temp, self.cache[idx])
+            self.dirty[idx] = False
+            self.tag[idx] = addr
+            for i in range(len(data)):
+                self.cache[idx][i] = data[i]
+            return DCacheInfo(self.cache[idx][block_offset], self.num_cycle_needed(12+extra_cycle)+1)
+        if not temp_lru_cnt[idx+1]:
+            self.valid[idx+1] = True
+            self.lru_cnt[idx+1] = True
+            extra_cycle = 0
+            if self.dirty[idx+1]:
+                extra_cycle = 12
+                self.memory.update_data(temp, self.cache[idx])
+            self.dirty[idx+1] = False
+            self.tag[idx] = addr
+            for i in range(len(data)):
+                self.cache[idx][i] = data[i]
+            return DCacheInfo(self.cache[idx+1][block_offset], self.num_cycle_needed(12+extra_cycle)+1)
+        return None
+
+    def update_val(self, addr, data):
+        temp = addr
+        addr = addr >> 2
+        # extract last 2 bits
+        offset_mask = 3
+
+        block_offset = addr & offset_mask
+        temp1 = addr >> 2
+        set_no = temp1 % 2
+
+        idx = set_no * self.no_of_sets
+        temp_lru_cnt = [False] * 4
+        self.memory.update_sw_data(temp, data)
+
+        temp_lru_cnt[idx] = self.lru_cnt[idx]
+        temp_lru_cnt[idx+1] = self.lru_cnt[idx+1]
+        self.lru_cnt[idx] = False
+        self.lru_cnt[idx+1] = False
+        if self.valid[idx] and self.tag[idx] == addr:
+            self.lru_cnt[idx] = True
+            self.dirty[idx] = True
+            self.cache[idx][block_offset] = data
+            return 1
+        if self.valid[idx+1] and self.tag[idx+1] == addr:
+            self.lru_cnt[idx+1] = True
+            self.dirty[idx+1] = True
+            self.cache[idx+1][block_offset] = data
+            return 1
+
+        data = self.memory.update_get_data(temp, block_offset, data)
+
+        if not self.valid[idx]:
+            self.valid[idx] = True
+            self.lru_cnt[idx] = True
+            self.dirty[idx] = False
+            self.tag[idx] = addr
+            for i in range(len(data)):
+                self.cache[idx][i] = data[i]
+            return self.num_cycle_needed(12)+1
+
+        if not self.valid[idx+1]:
+            self.valid[idx+1] = True
+            self.lru_cnt[idx+1] = True
+            self.dirty[idx+1] = False
+            self.tag[idx+1] = addr
+            for i in range(len(data)):
+                self.cache[idx+1][i] = data[i]
+            return self.num_cycle_needed(12)+1
+        if not temp_lru_cnt[idx]:
+            self.valid[idx] = True
+            self.lru_cnt[idx] = True
+            extra_cycle = 0
+            if self.dirty[idx]:
+                extra_cycle = 12
+                self.memory.update_data(temp, self.cache[idx])
+            self.dirty[idx] = False
+            self.tag[idx] = addr
+            for i in range(len(data)):
+                self.cache[idx][i] = data[i]
+            return self.num_cycle_needed(12+extra_cycle)+1
+        if not temp_lru_cnt[idx+1]:
+            self.valid[idx+1] = True
+            self.lru_cnt[idx+1] = True
+            extra_cycle = 0
+            if self.dirty[idx+1]:
+                extra_cycle = 12
+                self.memory.update_data(temp, self.cache[idx])
+            self.dirty[idx+1] = False
+            self.tag[idx] = addr
+            for i in range(len(data)):
+                self.cache[idx][i] = data[i]
+            return self.num_cycle_needed(12+extra_cycle)+1
+        return -1
+
+
+class DCacheInfo:
+
+    def __init__(self, data, clock_cycles):
+        self.data = data
+        self.clock_cycles = clock_cycles

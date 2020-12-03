@@ -8,6 +8,7 @@ class Chip():
     def __init__(self, cpu, instructions, data):
         self.cpu = cpu
         self.main_memory = [0] * constants.MAIN_MEMORY_SIZE
+        self.main_memory_access_time = 3
         self.__load_instructions(instructions)
         self.__load_data(data)
         self.sb = score_board.ScoreBoard(self)
@@ -39,11 +40,16 @@ class Chip():
 
     def execute(self, cycle_no):
         self.cpu.set_clock(cycle_no)
-        inst = self.main_memory[self.cpu.reg_pc]
-        self.sb.write_stage()
-        self.sb.exec_stage()
-        self.sb.read_stage()
-        self.sb.issue_stage()
-        self.sb.fetch_stage(inst)
-        self.sb.set_fu_active()
+        cache_block = None
+        instr = None
+        if self.cpu.icache.get_from_cache[self.cpu.reg_pc]:
+            cache_block = self.cpu.icache.get_from_cache[self.cpu.reg_pc]
+        else:
+            inst = self.main_memory[self.cpu.reg_pc]
+            self.sb.write_stage()
+            self.sb.exec_stage()
+            self.sb.read_stage()
+            self.sb.issue_stage()
+            self.sb.fetch_stage(inst)
+            self.sb.set_fu_active()
         return 1
