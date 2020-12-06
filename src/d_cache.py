@@ -1,10 +1,12 @@
 
 import constants
+from cache import Cache
 
 
-class DCache:
+class DCache(Cache):
 
     def __init__(self, clock_mgr, memory_bus, memory):
+        super().__init__("Dcache")
         self.clock_mgr = clock_mgr
         self.memory_bus = memory_bus
         self.memory = memory
@@ -39,7 +41,7 @@ class DCache:
                 self.memory_bus.get_busy_until() + clock_cycle)
             return busy_cnt
 
-    def fetch_data(self, addr):
+    def get_from_cache(self, addr):
         print("addr: ", addr)
         temp = addr
         addr = addr >> 2
@@ -113,7 +115,7 @@ class DCache:
             return DCacheInfo(self.cache[idx+1][block_offset], self.num_cycle_needed(12+extra_cycle)+1)
         return None
 
-    def update_val(self, addr, data):
+    def put_into_cache(self, addr, data):
         temp = addr
         addr = addr >> 2
         # extract last 2 bits

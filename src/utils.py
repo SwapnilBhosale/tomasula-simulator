@@ -2,8 +2,14 @@ import instruction as instr
 
 
 def load_bin_file(path):
-    with open(path) as f:
-        return f.read()
+    try: 
+        with open(path) as f:
+            return f.read()
+    except FileNotFoundError:
+        print("ERROR: File not found at location: ",path)
+        import sys
+        sys.exit(1)
+
 
 
 def get_instruction(inst):

@@ -152,12 +152,12 @@ class ScoreBoard:
             reg1 = self.instr.get_r1()
             addr = self.cpu.gpr[reg2][0] + \
                 int(self.instr.dest_op[:r2_open_ind])
-            data_block = self.dcache.fetch_data(addr + offset)
+            data_block = self.dcache.get_from_cache(addr + offset)
             self.exe_cycles += data_block.clock_cycles
             if self.instr.inst_str == constants.LW_INSTR or self.instr.inst_str == constants.SW_INSTR:
                 self.exe_cycles -= 1
             if self.instr.inst_str == constants.SW_INSTR:
-                self.dcache.update_val(addr + offset, self.cpu.gpr[reg1][0])
+                self.dcache.put_into_cache(addr + offset, self.cpu.gpr[reg1][0])
             self.is_d_cache_hit = True
             print("############## loaded from clock: {} cache: updated clock to: {} {}- {}".format(
                 self.clock, self.instr, self.exe_cycles, data_block.clock_cycles))
@@ -346,7 +346,7 @@ class ScoreBoard:
             if flag:
                 self.branch_taken = True
             self.fetch_cycle -= 1
-
+            print("@@@   ",self.instr)
             if not self.cpu.issue and self.fetch_cycle <= 0 and self.instr.inst_str == constants.HLT_INSTR:
                 print("fetched hlt : ", self.instr)
                 self.finish = True

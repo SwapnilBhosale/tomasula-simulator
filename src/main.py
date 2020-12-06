@@ -14,15 +14,13 @@ class CDC600:
 
     def __init__(self):
         args = sys.argv
-        #self.inst_file = args[1]
-        #self.data_file = args[2]
-        #self.config_file = args[3]
-        #self.res_file = args[4]
-
-        self.inst_file = "..//tc//test_case_2//inst.txt"
-        self.data_file = "..//tc//test_case_2//data.txt"
-        self.config_file = "..//tc//test_case_2//config.txt"
-        self.res_file = "..//tc//test_case_2//final_res.txt"
+        self.inst_file = args[1]
+        self.data_file = args[2]
+        self.config_file = args[3]
+        self.res_file = args[4]
+        if len(args) != 5:
+            self.print_help()
+            sys.exit(1)
         self.instructions = []
 
         self.scoreboards = []
@@ -37,11 +35,19 @@ class CDC600:
             self.cpu.icache_config[0], self.cpu.icache_config[1], self.clock_mgr, self.memory_bus)
         #print("before calling load")
 
+    def print_help(self):
+        print("Invalid number of arguments found")
+        print("Expecting 4 arguments! Please provide file paths")
+        print("Exmaple: python main.py inst.txt data.txt config.txt result.txt")
+
+
     def __load_instructions(self):
         instructions = utils.load_bin_file(self.inst_file)
         inst = instructions.split("\n")
         print("all isntgr: ", inst)
         for val in inst:
+            import re
+            val = re.sub('\s+',' ',val)
             val = val.strip()
             if val:
                 instr = utils.get_instruction(val)
@@ -52,7 +58,7 @@ class CDC600:
     def execute(self):
         self.__load_instructions()
         self.reg_pc = 0
-        fetch_cycle = self.icache.fetch_instruction(self.reg_pc)
+        fetch_cycle = self.icache.get_from_cache(self.reg_pc)
         clk_cnt = 1
         print("total instructions: ", len(self.instructions))
         #import sys
@@ -71,7 +77,7 @@ class CDC600:
             if self.scoreboards[-1].is_fetch_free:
                 print("^^^^^^^^^^^^^^^^^^^^ fetch free: ", clk_cnt)
                 self.reg_pc += 1
-                fetch_cycle = self.icache.fetch_instruction(self.reg_pc)
+                fetch_cycle = self.icache.get_from_cache(self.reg_pc)
                 self.scoreboards.append(ScoreBoard(
                     clk_cnt, fetch_cycle, self.instructions[self.reg_pc], self.instructions, self.cpu, self.clock_mgr, self.memory_bus, self.dcache))
             clk_cnt += 1

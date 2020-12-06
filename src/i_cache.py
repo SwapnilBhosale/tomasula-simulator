@@ -1,5 +1,6 @@
+from cache import Cache
 
-class ICache:
+class ICache(Cache):
 
     def __init__(self, num_of_blocks, block_size, clock_mgr, memory_bus):
         self.num_of_blocks = num_of_blocks
@@ -42,7 +43,7 @@ class ICache:
                 self.memory_bus.get_busy_until() + clock_cycle)
             return busy_cnt
 
-    def fetch_instruction(self, addr):
+    def get_from_cache(self, addr):
         block_num = (addr >> self.offset_cnt) % self.num_of_blocks
         tag = addr >> self.offset_cnt
         self.requests += 1
