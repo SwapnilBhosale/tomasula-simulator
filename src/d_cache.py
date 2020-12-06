@@ -11,7 +11,8 @@ class DCache:
         self.cache_size = constants.D_CACHE_SIZE
         self.block_size = constants.WORD_SIZE_IN_BYTES
         self.no_of_sets = constants.NO_OF_SETS_D_CACHE
-        self.cache = [[0 for i in range(self.block_size)] for j in range(self.cache_size)]
+        self.cache = [[0 for i in range(self.block_size)]
+                      for j in range(self.cache_size)]
         self.valid = [False] * self.cache_size
         self.lru_cnt = [False] * self.cache_size
         self.dirty = [False] * self.cache_size
@@ -20,10 +21,10 @@ class DCache:
         self.requests = 0
         self.hits = 0
 
-    def stats_total_requests(self):
+    def get_stats_total_requests(self):
         return self.requests
 
-    def stats_total_hits(self):
+    def get_stats_total_hits(self):
         return self.hits
 
     def num_cycle_needed(self, clock_cycle):
@@ -39,7 +40,7 @@ class DCache:
             return busy_cnt
 
     def fetch_data(self, addr):
-        print("addr: ",addr)
+        print("addr: ", addr)
         temp = addr
         addr = addr >> 2
         # extract last 2 bits
@@ -51,7 +52,8 @@ class DCache:
 
         idx = set_no * self.no_of_sets
 
-        print("idx: {} , set: {} , block_offset: {}".format(idx, set_no, block_offset))
+        print("idx: {} , set: {} , block_offset: {}".format(
+            idx, set_no, block_offset))
         temp_lru_cnt = [False] * 4
         temp_lru_cnt[idx] = self.lru_cnt[idx]
         temp_lru_cnt[idx+1] = self.lru_cnt[idx+1]
@@ -68,7 +70,7 @@ class DCache:
             return DCacheInfo(self.cache[idx+1][block_offset], 1)
 
         data = self.memory.fetch_data(temp)
-        print("########################### $$$$$$$$$$$$$$$$$$$$$$ data fetched: ",data)
+        print("########################### $$$$$$$$$$$$$$$$$$$$$$ data fetched: ", data)
         if not self.valid[idx]:
             self.valid[idx] = True
             self.lru_cnt[idx] = True

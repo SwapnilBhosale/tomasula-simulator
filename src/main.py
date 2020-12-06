@@ -54,9 +54,9 @@ class CDC600:
         self.reg_pc = 0
         fetch_cycle = self.icache.fetch_instruction(self.reg_pc)
         clk_cnt = 1
-        print("total instructions: ",len(self.instructions))
+        print("total instructions: ", len(self.instructions))
         #import sys
-        #sys.exit(0)
+        # sys.exit(0)
         self.scoreboards.append(ScoreBoard(
             clk_cnt, fetch_cycle, self.instructions[self.reg_pc], self.instructions, self.cpu, self.clock_mgr, self.memory_bus, self.dcache))
         while self.reg_pc < len(self.instructions)-1:
@@ -69,7 +69,7 @@ class CDC600:
                 if self.reg_pc != temp:
                     flag = True
             if self.scoreboards[-1].is_fetch_free:
-                print("^^^^^^^^^^^^^^^^^^^^ fetch free: ",clk_cnt)
+                print("^^^^^^^^^^^^^^^^^^^^ fetch free: ", clk_cnt)
                 self.reg_pc += 1
                 fetch_cycle = self.icache.fetch_instruction(self.reg_pc)
                 self.scoreboards.append(ScoreBoard(
@@ -86,7 +86,7 @@ class CDC600:
                 self.scoreboards[j].update(clk_cnt, self.reg_pc, j+1, False)
             clk_cnt += 1
             self.clock_mgr.increament_clock()
-            
+
         print("Writing results after clok: ", clk_cnt)
         self.write_result_file(
             self.scoreboards, self.dcache, self.icache, self.res_file)
@@ -108,19 +108,19 @@ class CDC600:
                 f.write("\n")
                 f.write("\n")
                 f.write("Total number of access requests for instruction cache: {}".format(
-                    icache.stats_total_requests()))
+                    icache.get_stats_total_requests()))
                 f.write("\n")
 
                 f.write("Number of instruction cache hits: {}".format(
-                    icache.stats_total_hits()))
+                    icache.get_stats_total_hits()))
                 f.write("\n")
 
                 f.write("Total number of access requests for data cache: {}".format(
-                    dcache.stats_total_requests()))
+                    dcache.get_stats_total_requests()))
                 f.write("\n")
 
                 f.write("Number of data cache hits: {}".format(
-                    dcache.stats_total_hits()))
+                    dcache.get_stats_total_hits()))
                 f.write("\n")
 
         except Exception as e:

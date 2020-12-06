@@ -214,7 +214,8 @@ class ScoreBoard:
                 is_fpr = 'F' in instr.src_op
                 r1 = instr.get_r1()
                 if is_gpr and r1 > 0:
-                    print("&&&& laod and store checking in gpr: ",self.cpu.gpr, " r1: ", r1, " pc: ",pc)
+                    print("&&&& laod and store checking in gpr: ",
+                          self.cpu.gpr, " r1: ", r1, " pc: ", pc)
                     if self.cpu.gpr[r1][1] > 0 and self.cpu.gpr[r1][1] < pc:
                         return True
                 if is_fpr and r1 > 0:
@@ -222,13 +223,14 @@ class ScoreBoard:
                         return True
                 else:
                     return False
-        
+
         if instr.dest_op:
             is_gpr = 'R' in instr.dest_op
             is_fpr = 'F' in instr.dest_op
             r2 = instr.get_r2()
             if is_gpr and r2 > 0:
-                print("&&&& checking in gpr: ",self.cpu.gpr, " r2: ", r2, " pc: ",pc)
+                print("&&&& checking in gpr: ",
+                      self.cpu.gpr, " r2: ", r2, " pc: ", pc)
                 if self.cpu.gpr[r2][1] > 0 and self.cpu.gpr[r2][1] < pc and self.instr.src_op != self.instr.dest_op:
                     return True
             if is_fpr and r2 > 0:
@@ -239,7 +241,7 @@ class ScoreBoard:
 
         if instr.third_op:
             if instr.is_branch_instr():
-                print("reg: {}",self.cpu.gpr, " fpr: ",self.cpu.fpr)
+                print("reg: {}", self.cpu.gpr, " fpr: ", self.cpu.fpr)
             is_gpr = 'R' in instr.third_op
             is_fpr = 'F' in instr.third_op
             r3 = instr.get_r3()
@@ -266,17 +268,18 @@ class ScoreBoard:
             return False
 
     def branch(self, branch_type, pc, curr_pc):
-        
+
         res = pc
         r2 = 0
         r1 = 0
         self.cpu.is_branch = False
         flag = False
-        print("BBBBBBBBBBBBBBBB branch instr: ",self.instr, " gpr: ",self.cpu.gpr, " fpr: ",self.cpu.fpr)
-        if branch_type == constants.BNE_INSTR: 
+        print("BBBBBBBBBBBBBBBB branch instr: ", self.instr,
+              " gpr: ", self.cpu.gpr, " fpr: ", self.cpu.fpr)
+        if branch_type == constants.BNE_INSTR:
             r2 = self.instr.get_r2()
             r1 = self.instr.get_r1()
-            
+
             if self.cpu.gpr[r1][0] != self.cpu.gpr[r2][0]:
                 for i in range(len(self.instrs)-1):
                     if self.instrs[i].have_label and self.instrs[i].have_label in self.instr.third_op:
@@ -286,7 +289,7 @@ class ScoreBoard:
         elif branch_type == constants.BEQ_INSTR:
             r2 = self.instr.get_r2()
             r1 = self.instr.get_r1()
-            
+
             if self.cpu.gpr[r1][0] == self.cpu.gpr[r2][0]:
                 for i in range(len(self.instrs)):
                     if self.instrs[i].have_label and self.instrs[i].have_label in self.instr.third_op:
@@ -300,14 +303,15 @@ class ScoreBoard:
                     if curr_pc != i:
                         res = i
                         flag = True
-        
-        print("&&&&&&&&&&&&&& called branch: ",branch_type, "pc: ",pc, " new_pc: ",res)
+
+        print("&&&&&&&&&&&&&& called branch: ",
+              branch_type, "pc: ", pc, " new_pc: ", res)
         if not flag:
             self.cpu.is_branch = True
         return res
 
     def set_reg_write(self, reg, pc, is_gpr=True):
-        print("************* Reg ", reg, " pc" ,pc, " is_gpr: ",is_gpr)
+        print("************* Reg ", reg, " pc", pc, " is_gpr: ", is_gpr)
         if reg > 0:
             if is_gpr:
                 self.cpu.gpr[reg][1] = pc
@@ -315,7 +319,6 @@ class ScoreBoard:
                 self.cpu.fpr[reg][1] = pc
 
     def set_reg_read(self, reg, is_gpr=True):
-       
 
         if reg > 0:
             if is_gpr:
@@ -386,11 +389,13 @@ class ScoreBoard:
                 self.finish = True
                 self.cpu.issue = False
                 if not (self.instr.inst_str == constants.SD_INSTR or self.instr.inst_str == constants.SW_INSTR):
-                    print("^^^^^^^^^^^ setting regwrite for instruction: ",self.instr, "gpr : ",self.cpu.gpr)
+                    print("^^^^^^^^^^^ setting regwrite for instruction: ",
+                          self.instr, "gpr : ", self.cpu.gpr)
                     is_gpr = self.instr.src_op and "R" in self.instr.src_op
                     self.set_reg_write(self.instr.get_r1(),
                                        war_pc, is_gpr)
-                    print("^^^^^^^^^^^ after regwrite for instruction: ",self.instr, "gpr : ",self.cpu.gpr)
+                    print("^^^^^^^^^^^ after regwrite for instruction: ",
+                          self.instr, "gpr : ", self.cpu.gpr)
                 self.issue = clk_cnt
                 self.is_next_free = True
         elif self.curr_stage == 2:
@@ -409,7 +414,7 @@ class ScoreBoard:
             if self.instr.is_branch_instr():
                 self.set_fp_busy(self.instr)
             self.war_hazard = self.is_war_hazard(
-                             self.instr, war_pc)
+                self.instr, war_pc)
             if self.war_hazard:
                 self.h_war = 'Y'
             if not self.war_hazard:

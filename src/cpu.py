@@ -75,37 +75,3 @@ class CPU:
         else:
             raise NotImplementedError(
                 "Functional unit {} is not supported".format(fp_type))
-
-    def __is_gpr(self, reg):
-        return True if reg[0] == "R" else False
-
-    def __check_int_alu(self, instr, reg):
-        res = False
-        assigned_adder, taken = self.int_alu[0]
-        if taken:
-            if assigned_adder.instr.inst_str != constants.SW_INSTR or assigned_adder.instr.inst_str != constants.SD_INSTR:
-                res = (
-                    instr != assigned_adder.instr and reg in assigned_adder.instr.src_op)
-        return res
-
-    def __check_fp_adder(self, instr, reg):
-        assigned_adders = [adder for adder, taken in self.fp_adder if taken]
-        raw_hazards = [True for adder in assigned_adders if instr !=
-                       adder.instr and reg in adder.instr.src_op]
-        return True in raw_hazards
-
-    def __check_fp_mul(self, instr, reg):
-        assigned_mul = [mul for mul, taken in self.fp_mul if taken]
-        raw_hazards = [True for mul in assigned_mul if instr !=
-                       mul.instr and reg in mul.instr.src_op]
-        return True in raw_hazards
-
-    def __check_fp_div(self, instr, reg):
-        assigned_div = [divider for divider, taken in self.fp_divider if taken]
-        raw_hazards = [True for divider in assigned_div if instr !=
-                       divider.instr and reg in divider.instr.src_op]
-        return True in raw_hazards
-
-    def is_raw_hazard(self, instr, reg):
-        print("checking for reg: {} instr: {}".format(reg, instr))
-        return self.__check_int_alu(instr, reg) or self.__check_fp_adder(instr, reg) or self.__check_fp_mul(instr, reg) or self.__check_fp_div(instr, reg)

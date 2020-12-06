@@ -24,10 +24,10 @@ class ICache:
         self.block_offset_mask = self.block_offset_mask >> 1
         self.offset_cnt = self.offset_cnt - 1
 
-    def stats_total_requests(self):
+    def get_stats_total_requests(self):
         return self.requests
 
-    def stats_total_hits(self):
+    def get_stats_total_hits(self):
         return self.hits
 
     def num_cycle_needed(self, clock_cycle):
