@@ -9,3 +9,20 @@ class FPAdder(FUnit):
 
     def execute(self):
         pass
+
+
+class BranchUnit(FUnit):
+
+    def __init__(self, name, latency):
+        super().__init__(name, latency)
+
+    def execute(self):
+        pass
+
+class LoadStoreUnit(FUnit):
+
+    def __init__(self, name, latency):
+        super().__init__(name, latency)
+
+    def execute(self):
+        pass

@@ -19,10 +19,10 @@ class CDC600:
         #self.config_file = args[3]
         #self.res_file = args[4]
 
-        self.inst_file = "..//tc//tc1//inst.txt"
-        self.data_file = "..//tc//tc1//data.txt"
-        self.config_file = "..//tc//tc1//config.txt"
-        self.res_file = "..//tc//tc1//final_res.txt"
+        self.inst_file = "..//tc//test_case_2//inst.txt"
+        self.data_file = "..//tc//test_case_2//data.txt"
+        self.config_file = "..//tc//test_case_2//config.txt"
+        self.res_file = "..//tc//test_case_2//final_res.txt"
         self.instructions = []
 
         self.scoreboards = []
@@ -54,6 +54,9 @@ class CDC600:
         self.reg_pc = 0
         fetch_cycle = self.icache.fetch_instruction(self.reg_pc)
         clk_cnt = 1
+        print("total instructions: ",len(self.instructions))
+        #import sys
+        #sys.exit(0)
         self.scoreboards.append(ScoreBoard(
             clk_cnt, fetch_cycle, self.instructions[self.reg_pc], self.instructions, self.cpu, self.clock_mgr, self.memory_bus, self.dcache))
         while self.reg_pc < len(self.instructions)-1:
@@ -66,18 +69,24 @@ class CDC600:
                 if self.reg_pc != temp:
                     flag = True
             if self.scoreboards[-1].is_fetch_free:
+                print("^^^^^^^^^^^^^^^^^^^^ fetch free: ",clk_cnt)
                 self.reg_pc += 1
                 fetch_cycle = self.icache.fetch_instruction(self.reg_pc)
                 self.scoreboards.append(ScoreBoard(
                     clk_cnt, fetch_cycle, self.instructions[self.reg_pc], self.instructions, self.cpu, self.clock_mgr, self.memory_bus, self.dcache))
             clk_cnt += 1
             self.clock_mgr.increament_clock()
-
+            '''if self.clock_mgr.get_clock() == 129:
+                print("scoreboard iss: ",self.scoreboards)
+                break
+            '''
+        print("^^^^^^^^^^^^^^^ running 100 times now")
         for _ in range(100):
             for j in range(len(self.scoreboards)):
                 self.scoreboards[j].update(clk_cnt, self.reg_pc, j+1, False)
             clk_cnt += 1
             self.clock_mgr.increament_clock()
+            
         print("Writing results after clok: ", clk_cnt)
         self.write_result_file(
             self.scoreboards, self.dcache, self.icache, self.res_file)
@@ -91,7 +100,7 @@ class CDC600:
                     temp = scoreboards[i]
                     inst_str = temp.instr.print_instr(is_print=False)
 
-                    temp1 = "{} \t\t\t {} \t {} \t {} \t {}\t {} \t {} \t {} \t {}".format(
+                    temp1 = "{:15s} \t {} \t {} \t {} \t {} \t {} \t {:4s} \t {:4s} \t {:4s}".format(
                         inst_str, temp.fetch, temp.issue, temp.read, temp.execute, temp.write, temp.h_war, temp.h_waw, temp.sh)
                     f.write(temp1)
                     f.write("\n")
@@ -119,7 +128,7 @@ class CDC600:
 
     def __get_res_file_header(self):
 
-        return "INSTRUCTION \t\t\t FETCH \t ISSUE \t READ \t EXEC \t WRITE \t RAW \t WAW \t STRUCTURAL \t"
+        return "{:15s} \t {} \t {} \t {} \t {} \t {} \t {} \t {} \t {}".format("INSTRUCTION", "FETCH", "ISSUE", "READ", "EXEC", "WRITE", "RAW", "WAW", "STRUCTURAL")
 
 
 main = CDC600()

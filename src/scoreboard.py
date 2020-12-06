@@ -207,15 +207,28 @@ class ScoreBoard:
         else:
             return False
 
-    def is_war_hazard(self, instr, pc, temp=None):
-        if temp:
-            return False
-
+    def is_war_hazard(self, instr, pc):
+        if instr.is_load_store_instr():
+            if instr.src_op:
+                is_gpr = 'R' in instr.src_op
+                is_fpr = 'F' in instr.src_op
+                r1 = instr.get_r1()
+                if is_gpr and r1 > 0:
+                    print("&&&& laod and store checking in gpr: ",self.cpu.gpr, " r1: ", r1, " pc: ",pc)
+                    if self.cpu.gpr[r1][1] > 0 and self.cpu.gpr[r1][1] < pc:
+                        return True
+                if is_fpr and r1 > 0:
+                    if self.cpu.fpr[r1][1] > 0 and self.cpu.fpr[r1][1] < pc:
+                        return True
+                else:
+                    return False
+        
         if instr.dest_op:
             is_gpr = 'R' in instr.dest_op
             is_fpr = 'F' in instr.dest_op
             r2 = instr.get_r2()
             if is_gpr and r2 > 0:
+                print("&&&& checking in gpr: ",self.cpu.gpr, " r2: ", r2, " pc: ",pc)
                 if self.cpu.gpr[r2][1] > 0 and self.cpu.gpr[r2][1] < pc and self.instr.src_op != self.instr.dest_op:
                     return True
             if is_fpr and r2 > 0:
@@ -225,6 +238,8 @@ class ScoreBoard:
             return False
 
         if instr.third_op:
+            if instr.is_branch_instr():
+                print("reg: {}",self.cpu.gpr, " fpr: ",self.cpu.fpr)
             is_gpr = 'R' in instr.third_op
             is_fpr = 'F' in instr.third_op
             r3 = instr.get_r3()
@@ -251,39 +266,56 @@ class ScoreBoard:
             return False
 
     def branch(self, branch_type, pc, curr_pc):
-        temp = pc
+        
+        res = pc
         r2 = 0
         r1 = 0
         self.cpu.is_branch = False
-
-        if branch_type == constants.BNE_INSTR or branch_type == constants.BEQ_INSTR:
+        flag = False
+        print("BBBBBBBBBBBBBBBB branch instr: ",self.instr, " gpr: ",self.cpu.gpr, " fpr: ",self.cpu.fpr)
+        if branch_type == constants.BNE_INSTR: 
             r2 = self.instr.get_r2()
             r1 = self.instr.get_r1()
+            
             if self.cpu.gpr[r1][0] != self.cpu.gpr[r2][0]:
+                for i in range(len(self.instrs)-1):
+                    if self.instrs[i].have_label and self.instrs[i].have_label in self.instr.third_op:
+                        if curr_pc != i:
+                            res = i
+                            flag = True
+        elif branch_type == constants.BEQ_INSTR:
+            r2 = self.instr.get_r2()
+            r1 = self.instr.get_r1()
+            
+            if self.cpu.gpr[r1][0] == self.cpu.gpr[r2][0]:
                 for i in range(len(self.instrs)):
                     if self.instrs[i].have_label and self.instrs[i].have_label in self.instr.third_op:
                         if curr_pc != i:
-                            return i
-                        else:
-                            return pc
+                            res = i
+                            flag = True
+
         elif branch_type == constants.J_INSTR:
             for i in range(len(self.instrs)):
                 if self.instrs[i].have_label and self.instrs[i].have_label in self.instr.src_op:
                     if curr_pc != i:
-                        return i
-                    else:
-                        return pc
-        self.cpu.is_branch = True
-        return temp
+                        res = i
+                        flag = True
+        
+        print("&&&&&&&&&&&&&& called branch: ",branch_type, "pc: ",pc, " new_pc: ",res)
+        if not flag:
+            self.cpu.is_branch = True
+        return res
 
     def set_reg_write(self, reg, pc, is_gpr=True):
-        if is_gpr:
-            self.cpu.gpr[reg][1] = pc
-        else:
-            self.cpu.fpr[reg][1] = pc
+        print("************* Reg ", reg, " pc" ,pc, " is_gpr: ",is_gpr)
+        if reg > 0:
+            if is_gpr:
+                self.cpu.gpr[reg][1] = pc
+            else:
+                self.cpu.fpr[reg][1] = pc
 
     def set_reg_read(self, reg, is_gpr=True):
-        print("************* Reg ", reg, " instr: ", self.instr)
+       
 
         if reg > 0:
             if is_gpr:
@@ -313,7 +345,7 @@ class ScoreBoard:
             self.fetch_cycle -= 1
 
             if not self.cpu.issue and self.fetch_cycle <= 0 and self.instr.inst_str == constants.HLT_INSTR:
-                print("fetched: ", self.instr)
+                print("fetched hlt : ", self.instr)
                 self.finish = True
                 self.is_fetch_free = True
                 self.fetch = clk_cnt
@@ -354,8 +386,11 @@ class ScoreBoard:
                 self.finish = True
                 self.cpu.issue = False
                 if not (self.instr.inst_str == constants.SD_INSTR or self.instr.inst_str == constants.SW_INSTR):
+                    print("^^^^^^^^^^^ setting regwrite for instruction: ",self.instr, "gpr : ",self.cpu.gpr)
+                    is_gpr = self.instr.src_op and "R" in self.instr.src_op
                     self.set_reg_write(self.instr.get_r1(),
-                                       war_pc, "R" in self.instr.src_op)
+                                       war_pc, is_gpr)
+                    print("^^^^^^^^^^^ after regwrite for instruction: ",self.instr, "gpr : ",self.cpu.gpr)
                 self.issue = clk_cnt
                 self.is_next_free = True
         elif self.curr_stage == 2:
@@ -368,15 +403,13 @@ class ScoreBoard:
                 self.is_next_free = True
                 self.curr_stage = 4
                 self.next_stage = 5
+                print("changing hlt instruction stages")
                 return pc_cnt
 
             if self.instr.is_branch_instr():
                 self.set_fp_busy(self.instr)
-            if self.instr.inst_str == constants.BNE_INSTR or self.instr.inst_str == constants.BEQ_INSTR or self.instr.inst_str == constants.SW_INSTR or self.instr.inst_str == constants.SD_INSTR:
-                self.war_hazard = self.is_war_hazard(
-                    self.instr, war_pc, True)
-            else:
-                self.war_hazard = self.is_war_hazard(self.instr, war_pc)
+            self.war_hazard = self.is_war_hazard(
+                             self.instr, war_pc)
             if self.war_hazard:
                 self.h_war = 'Y'
             if not self.war_hazard:
@@ -401,7 +434,7 @@ class ScoreBoard:
                                                          clk_cnt, self.exe_cycles))
             if self.instr.is_branch_instr():
                 print("*********************** this should run:0 ")
-                self.cpu.is_branch = True
+                self.cpu.is_branch = False
             if not self.is_d_cache_hit:
                 print("*********************** this should run:2 ")
                 self.check_and_load_from_cache(4)

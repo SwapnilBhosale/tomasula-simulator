@@ -10,7 +10,7 @@ def get_instruction(inst):
     #print("decoding instr: ", inst)
     res = None
     if inst:
-        if " " in inst:
+        if inst and not ("hlt" in inst or "HLT" in inst):
             label = None
             if ":" in inst:  # label
                 i = inst.index(":")
@@ -55,6 +55,12 @@ def get_instruction(inst):
                 res = instr.MULDInstr(args, have_label=label)
             elif "DIV.D" == temp:
                 res = instr.DIVDInstr(args, have_label=label)
+            elif "BNE" in temp:
+                res = instr.BNEInstr(args, have_label=label)
+            elif "BEQ" in temp:
+                res = inst.BEQInstr(args, have_label=label)
+            elif "J" in temp:
+                res = inst.JInstr(args, have_label=label)
         else:
             res = instr.HLTInstr()
     return res

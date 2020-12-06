@@ -9,3 +9,5 @@ class FPType(Enum):
     FPDiv = 3
     ICache = 4
     DCache = 5
+    LoadStoreUnit = 6
+    BranchUnit = 7

@@ -11,8 +11,7 @@ class DCache:
         self.cache_size = constants.D_CACHE_SIZE
         self.block_size = constants.WORD_SIZE_IN_BYTES
         self.no_of_sets = constants.NO_OF_SETS_D_CACHE
-        self.cache = [[0 for i in range(self.block_size)]
-                      for j in range(self.cache_size)]
+        self.cache = [[0 for i in range(self.block_size)] for j in range(self.cache_size)]
         self.valid = [False] * self.cache_size
         self.lru_cnt = [False] * self.cache_size
         self.dirty = [False] * self.cache_size
@@ -40,7 +39,7 @@ class DCache:
             return busy_cnt
 
     def fetch_data(self, addr):
-        print("addr: ", addr)
+        print("addr: ",addr)
         temp = addr
         addr = addr >> 2
         # extract last 2 bits
@@ -52,8 +51,7 @@ class DCache:
 
         idx = set_no * self.no_of_sets
 
-        print("idx: {} , set: {} , block_offset: {}".format(
-            idx, set_no, block_offset))
+        print("idx: {} , set: {} , block_offset: {}".format(idx, set_no, block_offset))
         temp_lru_cnt = [False] * 4
         temp_lru_cnt[idx] = self.lru_cnt[idx]
         temp_lru_cnt[idx+1] = self.lru_cnt[idx+1]
@@ -70,7 +68,7 @@ class DCache:
             return DCacheInfo(self.cache[idx+1][block_offset], 1)
 
         data = self.memory.fetch_data(temp)
-        print("########################### $$$$$$$$$$$$$$$$$$$$$$ data fetched: ", data)
+        print("########################### $$$$$$$$$$$$$$$$$$$$$$ data fetched: ",data)
         if not self.valid[idx]:
             self.valid[idx] = True
             self.lru_cnt[idx] = True
@@ -107,9 +105,9 @@ class DCache:
                 extra_cycle = 12
                 self.memory.update_data(temp, self.cache[idx])
             self.dirty[idx+1] = False
-            self.tag[idx] = address
+            self.tag[idx+1] = address
             for i in range(len(data)):
-                self.cache[idx][i] = data[i]
+                self.cache[idx+1][i] = data[i]
             return DCacheInfo(self.cache[idx+1][block_offset], self.num_cycle_needed(12+extra_cycle)+1)
         return None
 

@@ -109,7 +109,7 @@ class SWInstr(Instruction):
         r1 = self.get_r1()
         r2 = self.get_r2()
         cpu.gpr[r1][0] = data
-        data1 = cpu.gpr[r1]
+        data1 = cpu.gpr[r1][0]
         offset = int(self.dest_op[:self.dest_op.index("(")])
         addr = cpu.gpr[r2][0] + offset
         dcache.update_val(addr, data1)

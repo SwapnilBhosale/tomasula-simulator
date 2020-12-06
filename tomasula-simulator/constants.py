@@ -32,6 +32,9 @@ HLT_INSTR = "HLT"
 
 LI_INSTR = "LI"
 LUI_INSTR = "LUI"
+BEQ_INSTR = "BEQ"
+BNE_INSTR = "BNE"
+J_INSTR = "J"
 
 
 class FPType(Enum):

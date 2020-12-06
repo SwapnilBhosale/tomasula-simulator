@@ -1,34 +1,47 @@
 
 from fp_type import FPType
 from int_alu import IntAlu
-from fp_adder import FPAdder
+from fp_adder import FPAdder, BranchUnit, LoadStoreUnit
 from fp_divider import FPDivider
 from fp_multiply import FP_Multiply
 from cache import ICache, DCache
 import constants
+from memory_bus import MemoryBus
 
 
 class CPU:
 
-    def __init__(self, config):
-        self.gpr = [0] * constants.NUM_REGISTERS
-        self.fpr = [0] * constants.NUM_REGISTERS
+    def __init__(self, config, clk_mgr):
+        self.gpr = [[0 for i in range(3)]
+                    for j in range(constants.NUM_REGISTERS+1)]
+        self.fpr = [[0 for i in range(3)]
+                    for j in range(constants.NUM_REGISTERS+1)]
         self.int_alu = None
         self.fp_adder = None
         self.fp_divider = None
         self.fp_mul = None
+        self.load_store_unit = None
+        self.branch_unit = None
+
         self.icache = None
         self.dcache = None
         self.reg_pc = constants.PC_START_ADD
-        self.__load_config(config)
-        self.__add_d_cache()
+        self.memory_bus = MemoryBus()
+        self.clk_mgr = clk_mgr
+
+        
         self.curr_clock = 0
+
+    
+    def load_config(self, config):
+        self.__load_config(config)
+
+    def set_chip(self, chip):
+        self.chip = chip
 
     def set_clock(self, clk_no):
         self.curr_clock = clk_no
 
-    def __add_d_cache(self):
-        self.add_fp_unit(FPType.DCache, 2, 4)
 
     def __load_config(self, configs):
         config = configs.split("\n")
@@ -54,24 +67,28 @@ class CPU:
         print("adding integer alu")
         # integer ALU is not given in config, so add here to the CPU
         self.add_fp_unit(FPType.IntALU, 1, 1)
+        self.add_fp_unit(FPType.LoadStoreUnit, 1, 1)
+        self.add_fp_unit(FPType.BranchUnit, 1, 0)
+        self.add_fp_unit(FPType.DCache, 1, 0)
+
 
     def add_fp_unit(self, fp_type, arg1, arg2):
         if fp_type == FPType.FPAdder:
-            self.fp_adder = [(FPAdder("FP-Adder" + str(i+1), arg2), False)
-                             for i in range(arg1)]
+            self.fp_adder = [ FPAdder("FP-Adder" + str(i+1), arg2) for i in range(arg1)]
         elif fp_type == FPType.FPDiv:
-            self.fp_divider = [
-                (FPDivider("FP-Divider" + str(i+1), arg2), False) for i in range(arg1)]
+            self.fp_divider = [ FPDivider("FP-Divider" + str(i+1), arg2) for i in range(arg1)]
         elif fp_type == FPType.FPMul:
-            self.fp_mul = [(FP_Multiply(
-                "FP-Multiplyer" + str(i+1), arg2), False) for i in range(arg1)]
+            self.fp_mul = [ FP_Multiply("FP-Multiplyer" + str(i+1), arg2) for i in range(arg1)]
         elif fp_type == FPType.IntALU:
-            self.int_alu = [(IntAlu("ALU" + str(i+1), arg2), False)
-                            for i in range(arg1)]
+            self.int_alu = [ IntAlu("ALU" + str(i+1), arg2)for i in range(arg1)]
         elif fp_type == FPType.ICache:
-            self.icache = ICache(arg1, arg2)
+            self.icache = ICache(arg1, arg2, self.memory_bus, self.clk_mgr)
         elif fp_type == FPType.DCache:
-            self.dcache = DCache(arg1, arg2)
+            self.dcache = DCache(arg1, arg2, self.chip, self.memory_bus, self.clk_mgr)
+        elif fp_type == FPType.LoadStoreUnit:
+            self.load_store_unit = [ LoadStoreUnit("LoadStoreUnit" + str(i+1), arg2) for i in range(arg1)]
+        elif fp_type == FPType.BranchUnit:
+            self.branch_unit = [ BranchUnit("BranchUnit" + str(i+1), arg2) for i in range(arg1)]
         else:
             raise NotImplementedError(
                 "Functional unit {} is not supported".format(fp_type))
@@ -106,6 +123,13 @@ class CPU:
                        divider.instr and reg in divider.instr.src_op]
         return True in raw_hazards
 
-    def is_raw_hazard(self, instr, reg):
-        print("checking for reg: {} instr: {}".format(reg, instr))
-        return self.__check_int_alu(instr, reg) or self.__check_fp_adder(instr, reg) or self.__check_fp_mul(instr, reg) or self.__check_fp_div(instr, reg)
+    def is_raw_hazard(self, instr, reg, is_gpr):
+        res = False
+        if reg > 0:
+            if is_gpr:
+                if self.cpu.gpr[r2][1] > 0:
+                    res =  True
+            if is_fpr and r2 > 0:
+                if self.cpu.fpr[r2][1] > 0:
+                    res =  True
+        return res

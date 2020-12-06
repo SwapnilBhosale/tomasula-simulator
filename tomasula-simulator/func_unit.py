@@ -7,6 +7,7 @@ class FUnit:
         self.exec_time = exec_time
         self.remain_time = exec_time
         self.instr = None
+        self.occupied = False
 
     def set_instruction(self, instr):
         self.instr = instr
@@ -17,3 +18,18 @@ class FUnit:
 
     def execute(self):
         raise NotImplementedError
+
+
+    def set_occupied(self, val):
+        self.occupied = val
+    
+    def is_occupied(self):
+        return self.occupied
+
+    def add_remain_time(self, time):
+        self.remain_time += time
+    
+    def cleanup(self):
+        self.occupied = False
+        self.instr = None
+        print("** cleaned up ",self.name)
