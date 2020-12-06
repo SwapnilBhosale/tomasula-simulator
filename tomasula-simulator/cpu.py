@@ -29,10 +29,8 @@ class CPU:
         self.memory_bus = MemoryBus()
         self.clk_mgr = clk_mgr
 
-        
         self.curr_clock = 0
 
-    
     def load_config(self, config):
         self.__load_config(config)
 
@@ -41,7 +39,6 @@ class CPU:
 
     def set_clock(self, clk_no):
         self.curr_clock = clk_no
-
 
     def __load_config(self, configs):
         config = configs.split("\n")
@@ -71,24 +68,29 @@ class CPU:
         self.add_fp_unit(FPType.BranchUnit, 1, 0)
         self.add_fp_unit(FPType.DCache, 1, 0)
 
-
     def add_fp_unit(self, fp_type, arg1, arg2):
         if fp_type == FPType.FPAdder:
-            self.fp_adder = [ FPAdder("FP-Adder" + str(i+1), arg2) for i in range(arg1)]
+            self.fp_adder = [FPAdder("FP-Adder" + str(i+1), arg2)
+                             for i in range(arg1)]
         elif fp_type == FPType.FPDiv:
-            self.fp_divider = [ FPDivider("FP-Divider" + str(i+1), arg2) for i in range(arg1)]
+            self.fp_divider = [
+                FPDivider("FP-Divider" + str(i+1), arg2) for i in range(arg1)]
         elif fp_type == FPType.FPMul:
-            self.fp_mul = [ FP_Multiply("FP-Multiplyer" + str(i+1), arg2) for i in range(arg1)]
+            self.fp_mul = [FP_Multiply(
+                "FP-Multiplyer" + str(i+1), arg2) for i in range(arg1)]
         elif fp_type == FPType.IntALU:
-            self.int_alu = [ IntAlu("ALU" + str(i+1), arg2)for i in range(arg1)]
+            self.int_alu = [IntAlu("ALU" + str(i+1), arg2)for i in range(arg1)]
         elif fp_type == FPType.ICache:
             self.icache = ICache(arg1, arg2, self.memory_bus, self.clk_mgr)
         elif fp_type == FPType.DCache:
-            self.dcache = DCache(arg1, arg2, self.chip, self.memory_bus, self.clk_mgr)
+            self.dcache = DCache(arg1, arg2, self.chip,
+                                 self.memory_bus, self.clk_mgr)
         elif fp_type == FPType.LoadStoreUnit:
-            self.load_store_unit = [ LoadStoreUnit("LoadStoreUnit" + str(i+1), arg2) for i in range(arg1)]
+            self.load_store_unit = [LoadStoreUnit(
+                "LoadStoreUnit" + str(i+1), arg2) for i in range(arg1)]
         elif fp_type == FPType.BranchUnit:
-            self.branch_unit = [ BranchUnit("BranchUnit" + str(i+1), arg2) for i in range(arg1)]
+            self.branch_unit = [BranchUnit(
+                "BranchUnit" + str(i+1), arg2) for i in range(arg1)]
         else:
             raise NotImplementedError(
                 "Functional unit {} is not supported".format(fp_type))
@@ -128,8 +130,8 @@ class CPU:
         if reg > 0:
             if is_gpr:
                 if self.cpu.gpr[r2][1] > 0:
-                    res =  True
+                    res = True
             if is_fpr and r2 > 0:
                 if self.cpu.fpr[r2][1] > 0:
-                    res =  True
+                    res = True
         return res

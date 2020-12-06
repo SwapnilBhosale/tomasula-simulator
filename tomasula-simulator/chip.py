@@ -32,7 +32,7 @@ class Chip():
         idx = (addr - 256) // 4
         idx = idx // 4
         return self.data[idx]
-    
+
     def update_data_for_d_cache(self, address, data):
         idx = (address - 256) // 4
         idx = idx // 4

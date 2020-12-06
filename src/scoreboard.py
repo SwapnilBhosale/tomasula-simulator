@@ -1,4 +1,4 @@
-from stage import ScoreBoardStage
+
 from cpu import CPU
 import constants
 

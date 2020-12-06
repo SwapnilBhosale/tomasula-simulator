@@ -9,11 +9,12 @@ from chip import Chip
 import utils
 from clock_mgr import ClockMgr
 
+
 class App:
 
     def __init__(self):
         args = sys.argv
-        
+
         #self.inst_file = args[1]
         #self.data_file = args[2]
         #self.config_file = args[3]
@@ -21,7 +22,7 @@ class App:
         self.data_file = "..//tc//tc1//data.txt"
         self.config_file = "..//tc//tc1//config.txt"
         self.result_file = "..//tc//tc1//mine.txt"
-        
+
         self.chip = None
         self.clk_mgr = ClockMgr()
         self.init_chip()

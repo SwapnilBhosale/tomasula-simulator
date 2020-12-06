@@ -75,7 +75,6 @@ class CDC600:
                 if self.reg_pc != temp:
                     flag = True
             if self.scoreboards[-1].is_fetch_free:
-                print("^^^^^^^^^^^^^^^^^^^^ fetch free: ", clk_cnt)
                 self.reg_pc += 1
                 fetch_cycle = self.icache.get_from_cache(self.reg_pc)
                 self.scoreboards.append(ScoreBoard(
@@ -86,7 +85,6 @@ class CDC600:
                 print("scoreboard iss: ",self.scoreboards)
                 break
             '''
-        print("^^^^^^^^^^^^^^^ running 100 times now")
         for _ in range(100):
             for j in range(len(self.scoreboards)):
                 self.scoreboards[j].update(clk_cnt, self.reg_pc, j+1, False)

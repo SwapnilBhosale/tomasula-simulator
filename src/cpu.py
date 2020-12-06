@@ -8,6 +8,12 @@ from int_alu import IntAlu
 from d_cache import DCache
 
 
+'''
+    This class represents the CPU of the system
+    This conatains General Purpose Registers, Floating point registers, 
+    CDC 6600 vatious Functional units, ICache, Dcahce etc.
+
+'''
 class CPU:
 
     def __init__(self, config_path):
@@ -31,6 +37,11 @@ class CPU:
         self.icache_config = None
         self.__load_config()
 
+
+    '''
+        This method load the config file and initilizes CPU and functional units
+        according to the given configurations in the config file
+    ''' 
     def __load_config(self):
         configs = utils.load_bin_file(self.config_path)
         config = configs.split("\n")
@@ -59,6 +70,10 @@ class CPU:
         # integer ALU is not given in config, so add here to the CPU
         self.add_fp_unit(FPType.IntALU, 1, 1)
 
+
+    '''
+        This is a helper method to add functional unit to the CPU
+    '''
     def add_fp_unit(self, fp_type, arg1, arg2):
         if fp_type == FPType.FPAdder:
             self.fp_adder = [FPAdder("FP-Adder" + str(i+1), arg2)

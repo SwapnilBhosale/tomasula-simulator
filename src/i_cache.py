@@ -3,6 +3,7 @@ from cache import Cache
 class ICache(Cache):
 
     def __init__(self, num_of_blocks, block_size, clock_mgr, memory_bus):
+        super().__init__("Icache")
         self.num_of_blocks = num_of_blocks
         self.block_size = block_size
         self.clock_mgr = clock_mgr

@@ -2,7 +2,10 @@ from fp_type import FPType
 import constants
 import utils
 
-
+'''
+    This is the base class for the all instructions.
+    Contains common fields and common methods needed across the instructions
+'''
 class Instruction():
     def __init__(self):
         self.inst_str = None

@@ -1,4 +1,10 @@
 
+
+'''
+
+    This is the base class for cache
+    defines get and put methods
+'''
 class Cache:
     def __init__(self, name):
         self.name = name

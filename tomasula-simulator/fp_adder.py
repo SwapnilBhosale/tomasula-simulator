@@ -19,6 +19,7 @@ class BranchUnit(FUnit):
     def execute(self):
         pass
 
+
 class LoadStoreUnit(FUnit):
 
     def __init__(self, name, latency):

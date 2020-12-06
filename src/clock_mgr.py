@@ -1,5 +1,9 @@
 
+'''
 
+Clock manager holds the current clock value of the system
+This class is shared among other system components for clock sharing.
+'''
 class ClockMgr:
 
     def __init__(self):

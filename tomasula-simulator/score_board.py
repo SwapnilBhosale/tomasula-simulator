@@ -21,8 +21,10 @@ class ScoreBoard:
     def fetch_stage(self):
         if len(self.fetch) == 0:
             if not self.fetch_stall:
-                fetch_cycles = self.chip.cpu.icache.fetch_instruction(self.chip.cpu.reg_pc)
-                print("*** from cache: ",fetch_cycles," reg pc : ", self.cpu.reg_pc, "clokc: ", self.cpu.clk_mgr.get_clock())
+                fetch_cycles = self.chip.cpu.icache.fetch_instruction(
+                    self.chip.cpu.reg_pc)
+                print("*** from cache: ", fetch_cycles, " reg pc : ",
+                      self.cpu.reg_pc, "clokc: ", self.cpu.clk_mgr.get_clock())
                 if fetch_cycles > 1:
                     self.fetch_stall = True
                     self.fetch_cycles = fetch_cycles
@@ -31,47 +33,52 @@ class ScoreBoard:
                     self.fetch.append(self.chip.instr[self.chip.cpu.reg_pc])
                     self.fetch[0].res.append(self.cpu.clk_mgr.get_clock())
                     self.cpu.reg_pc += 1
-                    
-                    print("Fetched instruction: ", self.fetch[0]," at clock: ",self.cpu.clk_mgr.get_clock())
-            
+
+                    print("Fetched instruction: ",
+                          self.fetch[0], " at clock: ", self.cpu.clk_mgr.get_clock())
+
             else:
-                print("in else not stall : ",self.fetch_cycles)
-                if self.fetch_cycles  == 1:
-                    print(self.chip.instr, " &&& reg_pc: ", self.cpu.reg_pc )
+                print("in else not stall : ", self.fetch_cycles)
+                if self.fetch_cycles == 1:
+                    print(self.chip.instr, " &&& reg_pc: ", self.cpu.reg_pc)
                     self.fetch.append(self.chip.instr[self.chip.cpu.reg_pc])
                     self.fetch_stall = False
                     self.fetch[0].res.append(self.cpu.clk_mgr.get_clock())
-                    print("Fetched instruction else: ", self.fetch[0]," at clock: ",self.cpu.clk_mgr.get_clock())
+                    print("Fetched instruction else: ",
+                          self.fetch[0], " at clock: ", self.cpu.clk_mgr.get_clock())
                     self.cpu.reg_pc += 1
                 else:
                     self.fetch_cycles -= 1
 
     def issue_stage(self):
-        print("********** 2 Issue ",self.fetch)
+        print("********** 2 Issue ", self.fetch)
         if len(self.fetch) == 0:
             print("No instruction to issue")
             return
         else:
             next_instr = self.fetch[0]
             res = self.__can_assign_processing_unit(next_instr)
-            is_waw_hazard= self.check_waw_hazards(next_instr)
+            is_waw_hazard = self.check_waw_hazards(next_instr)
             if res:
                 if not is_waw_hazard:
                     # add fetch complete cycle number
                     next_instr.res.append(self.cpu.clk_mgr.get_clock())
                     print("Assigned to FP: {}, instr: {}".format(next_instr.processing_unit,
-                                                                next_instr.print_instr(is_print=False)))
+                                                                 next_instr.print_instr(is_print=False)))
                     self.set_fp_busy(next_instr)
                     self.issue.append(next_instr)
                     if not (next_instr.inst_str == constants.SD_INSTR or next_instr.inst_str == constants.SW_INSTR):
-                        self.set_reg_write(next_instr.get_r1(), "R" in next_instr.src_op)
+                        self.set_reg_write(
+                            next_instr.get_r1(), "R" in next_instr.src_op)
                     self.fetch.pop()
                 else:
                     if len(next_instr.waw_hazard) == 0:
-                        next_instr.waw_hazard.append(self.chip.cpu.clk_mgr.get_clock())
+                        next_instr.waw_hazard.append(
+                            self.chip.cpu.clk_mgr.get_clock())
             else:
                 if len(next_instr.struct_hazard) == 0:
-                    next_instr.struct_hazard.append(self.chip.cpu.clk_mgr.get_clock())
+                    next_instr.struct_hazard.append(
+                        self.chip.cpu.clk_mgr.get_clock())
 
     def read_stage(self):
         print("********** 3 Read\n")
@@ -83,15 +90,18 @@ class ScoreBoard:
                     next_instr.res.append(self.chip.cpu.clk_mgr.get_clock())
                     temp.append(i)
                     if next_instr.is_load_store_instr() and not next_instr.d_cache_hit:
-                        data_block = self.check_and_load_from_cache(0, next_instr)
-                        self.cpu.load_store_unit[0].add_remain_time(data_block.clock_cycles)
+                        data_block = self.check_and_load_from_cache(
+                            0, next_instr)
+                        self.cpu.load_store_unit[0].add_remain_time(
+                            data_block.clock_cycles)
 
                     self.read.append(next_instr)
                     print("instr: {}".format(
                         next_instr.print_instr(is_print=False)))
                 else:
                     if len(next_instr.raw_hazard) == 0:
-                        next_instr.raw_hazard.append(self.chip.cpu.clk_mgr.get_clock())
+                        next_instr.raw_hazard.append(
+                            self.chip.cpu.clk_mgr.get_clock())
             else:
                 print("^^^ RAW hazard for instr: {}".format(
                     next_instr.print_instr(is_print=False)))
@@ -112,14 +122,15 @@ class ScoreBoard:
                 for alu in occupied_int_alu:
                     if self.chip.cpu.int_alu[alu].instr == next_instr:
                         if self.chip.cpu.int_alu[alu].remain_time == 1:
-                            next_instr.res.append(self.chip.cpu.clk_mgr.get_clock())
+                            next_instr.res.append(
+                                self.chip.cpu.clk_mgr.get_clock())
                             # execute instruction
-                            #next_instr.execute_instr(self.chip)
+                            # next_instr.execute_instr(self.chip)
                             self.exec.append(next_instr)
                             #self.chip.cpu.fp_adder[adder] = (self.chip.cpu.fp_adder[adder][0], False)
                             temp.append(i)
                             print("adder instr: {}".format(
-                            next_instr.print_instr(is_print=False)))
+                                next_instr.print_instr(is_print=False)))
                         else:
                             print("Decrementing integer remain time")
                             self.chip.cpu.int_alu[alu].remain_time -= 1
@@ -131,9 +142,10 @@ class ScoreBoard:
                 for adder in occupied_adders:
                     if self.chip.cpu.fp_adder[adder][0].instr == next_instr:
                         if self.chip.cpu.fp_adder[adder][0].remain_time == 1:
-                            next_instr.res.append(self.chip.cpu.clk_mgr.get_clock())
+                            next_instr.res.append(
+                                self.chip.cpu.clk_mgr.get_clock())
                             # execute instruction
-                            #next_instr.execute_instr(self.chip)
+                            # next_instr.execute_instr(self.chip)
                             self.exec.append(next_instr)
                             #self.chip.cpu.fp_adder[adder] = (self.chip.cpu.fp_adder[adder][0], False)
                             print("adder instr: {}".format(
@@ -147,15 +159,16 @@ class ScoreBoard:
                 for divider in occupied_div:
                     if self.chip.cpu.fp_divider[divider].instr == next_instr:
                         if self.chip.cpu.fp_divider[divider].remain_time == 1:
-                            next_instr.res.append(self.chip.cpu.clk_mgr.get_clock())
+                            next_instr.res.append(
+                                self.chip.cpu.clk_mgr.get_clock())
                             # execute instruction
-                            #next_instr.execute_instr(self.chip)
+                            # next_instr.execute_instr(self.chip)
                             self.exec.append(next_instr)
                             #self.chip.cpu.fp_divider[divider] = (self.chip.cpu.fp_divider[divider][0], False)
                             print("instr: {}".format(
                                 next_instr.print_instr(is_print=False)))
                             temp.append(i)
-                            
+
                         else:
                             self.chip.cpu.fp_divider[divider].remain_time -= 1
             elif next_instr.processing_unit == FPType.FPMul:
@@ -164,9 +177,10 @@ class ScoreBoard:
                 for mul in occupied_mul:
                     if self.chip.cpu.fp_mul[mul].instr == next_instr:
                         if self.chip.cpu.fp_mul[mul].remain_time == 0:
-                            next_instr.res.append(self.chip.cpu.clk_mgr.get_clock())
+                            next_instr.res.append(
+                                self.chip.cpu.clk_mgr.get_clock())
                             # execute instruction
-                            #next_instr.execute_instr(self.chip)
+                            # next_instr.execute_instr(self.chip)
                             self.exec.append(next_instr)
                             #self.chip.cpu.fp_mul[mul] = (self.chip.cpu.fp_mul[mul][0], False)
                             print("instr: {}".format(
@@ -180,10 +194,11 @@ class ScoreBoard:
                 for load_store in occupied_load_store:
                     if self.chip.cpu.load_store_unit[load_store].instr == next_instr:
                         if self.chip.cpu.load_store_unit[load_store].remain_time == 1:
-                            next_instr.res.append(self.chip.cpu.clk_mgr.get_clock())
+                            next_instr.res.append(
+                                self.chip.cpu.clk_mgr.get_clock())
                             # execute instruction
                             next_instr.execute_instr(self.chip)
-                            #self.exec.append(next_instr)
+                            # self.exec.append(next_instr)
                             #self.chip.cpu.fp_mul[mul] = (self.chip.cpu.fp_mul[mul][0], False)
                             print("instr: {}".format(
                                 next_instr.print_instr(is_print=False)))
@@ -193,7 +208,6 @@ class ScoreBoard:
 
         self.read = [next_instr for i, next_instr in enumerate(
             self.read) if i not in temp]
-
 
     def check_and_load_from_cache(self, offset, instr):
         r2_open_ind, _ = instr.dest_op.index(
@@ -212,7 +226,6 @@ class ScoreBoard:
             self.cpu.clk_mgr.get_clock(), instr, instr.exec_stage_cycle, data_block.clock_cycles))
         return data_block
 
-        
     def set_reg_write(self, reg, pc, is_gpr=True):
         if reg and reg > 0:
             if is_gpr:
@@ -220,11 +233,9 @@ class ScoreBoard:
             else:
                 self.cpu.fpr[reg][1] = pc
 
-
-
     def set_fp_busy(self, instr):
         pu_type = instr.processing_unit
-       
+
         if pu_type == FPType.IntALU:
             for i in range(len(self.cpu.int_alu)):
                 if not self.cpu.int_alu[i].is_occupied():
@@ -278,7 +289,6 @@ class ScoreBoard:
                 self.cpu.load_store_unit[instr.assigned_index].cleanup()
             elif pu_type == FPType.BranchUnit:
                 self.cpu.branch_unit[instr.assigned_index].cleanup()
-
 
     def write_stage(self):
         print("************** 5 Write \n")
@@ -355,7 +365,7 @@ class ScoreBoard:
                 if not self.cpu.branch_unit[i].is_occupied():
                     res = True
 
-        '''    
+        '''
             free_adders = [i for i, adder in enumerate(
                 self.chip.cpu.fp_adder) if not adder[1]]
             if len(free_adders) == 0:

@@ -3,6 +3,13 @@ import constants
 from cache import Cache
 
 
+
+'''
+
+    This class repesents the Data Cache
+    Data cache is a 2 way Set Associative with 2 sets and 4 blocks
+    Implements the LRU replacement stratergy in case of cache miss
+'''
 class DCache(Cache):
 
     def __init__(self, clock_mgr, memory_bus, memory):
@@ -23,12 +30,22 @@ class DCache(Cache):
         self.requests = 0
         self.hits = 0
 
+    '''
+        Returns the total number of request received to the DCache so fat
+    '''
     def get_stats_total_requests(self):
         return self.requests
 
+
+    '''
+        Returns the total number of cache HITS
+    '''
     def get_stats_total_hits(self):
         return self.hits
 
+    '''
+        Returns the Cycles needed
+    '''
     def num_cycle_needed(self, clock_cycle):
         if not self.memory_bus.is_busy(self.clock_mgr.get_clock()):
             self.memory_bus.set_busy_until(
@@ -41,6 +58,7 @@ class DCache(Cache):
                 self.memory_bus.get_busy_until() + clock_cycle)
             return busy_cnt
 
+    
     def get_from_cache(self, addr):
         print("addr: ", addr)
         temp = addr

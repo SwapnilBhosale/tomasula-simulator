@@ -17,9 +17,10 @@ class Cache():
 
     def get_stats_requests(self):
         return self.requests
-    
+
     def get_stats_hits(self):
         return self.hits
+
 
 class SetAssociateCache(Cache):
 
@@ -37,7 +38,8 @@ class SetAssociateCache(Cache):
         self.memory_bus = memory_bus
         self.chip = chip
 
-        self.cache = [[0 for i in range(self.block_size_words)] for j in range(self.cache_size)]
+        self.cache = [[0 for i in range(self.block_size_words)]
+                      for j in range(self.cache_size)]
 
     def num_cycle_needed(self, clock_cycle):
         if not self.memory_bus.is_busy(self.clk_mgr.get_clock()):
@@ -50,6 +52,7 @@ class SetAssociateCache(Cache):
             self.memory_bus.set_busy_until(
                 self.memory_bus.get_busy_until() + clock_cycle)
             return busy_cnt
+
 
 class DirectCache(Cache):
     def __init__(self, num_of_blocks, block_size_words, memory_bus, clk_mgr):
@@ -62,7 +65,7 @@ class DirectCache(Cache):
         self.offset_cnt = 0
         self.clk_mgr = clk_mgr
         self.__set_offset_mask()
-    
+
     def __set_offset_mask(self):
         temp = self.block_size_words
         while temp:
@@ -73,7 +76,8 @@ class DirectCache(Cache):
         self.block_offset_mask = self.block_offset_mask >> 1
         self.offset_cnt = self.offset_cnt - 1
 
-        print("Block_offset_mask: ",self.block_offset_mask, " offset_cnt: ", self.offset_cnt)
+        print("Block_offset_mask: ", self.block_offset_mask,
+              " offset_cnt: ", self.offset_cnt)
 
     def num_cycle_needed(self, clock_cycle):
         if not self.memory_bus.is_busy(self.clk_mgr.get_clock()):
@@ -87,31 +91,31 @@ class DirectCache(Cache):
                 self.memory_bus.get_busy_until() + clock_cycle)
             return busy_cnt
 
-    
+
 class ICache(DirectCache):
 
     def __init__(self, num_of_blocks, block_size_words, memory_bus, clk_mgr):
         super().__init__(num_of_blocks, block_size_words, memory_bus, clk_mgr)
 
-    
     def fetch_instruction(self, address):
         block_num = (address >> self.offset_cnt) % self.num_of_blocks
         tag = address >> self.offset_cnt
         self.requests += 1
-        print("**** tag: {}, block_nul: {}, cache: {} ".format(tag,block_num, self.cache))
-        cycles_required = 0                                                       
+        print("**** tag: {}, block_nul: {}, cache: {} ".format(tag,
+                                                               block_num, self.cache))
+        cycles_required = 0
         if block_num in self.cache:
             if self.cache[block_num] == tag:
                 self.hits += 1
-                cycles_required =  self.hit_time
+                cycles_required = self.hit_time
             else:
                 self.cache[block_num] = tag
-                cycles_required =  self.num_cycle_needed(self.block_size_words * 3)
+                cycles_required = self.num_cycle_needed(
+                    self.block_size_words * 3)
         else:
             self.cache[block_num] = tag
-            cycles_required =  self.num_cycle_needed(self.block_size_words * 3)
+            cycles_required = self.num_cycle_needed(self.block_size_words * 3)
         return cycles_required
-
 
 
 class DCache(SetAssociateCache):
@@ -125,7 +129,7 @@ class DCache(SetAssociateCache):
             self.memory_bus.set_busy_until(
                 self.clk_mgr.get_clock() + clock_cycle)
         else:
-            res  = self.memory_bus.get_busy_until(
+            res = self.memory_bus.get_busy_until(
             ) - self.clk_mgr.get_clock() + clock_cycle
             self.memory_bus.set_busy_until(
                 self.memory_bus.get_busy_until() + clock_cycle)
@@ -165,7 +169,7 @@ class DCache(SetAssociateCache):
             self.hits += 1
             return DCacheInfo(self.cache[idx+1][block_offset], 1)
 
-        #data not found in cache so load from memory
+        # data not found in cache so load from memory
         data = self.chip.fetch_data_for_d_cache(old_address)
         print("########################### $$$$$$$$$$$$$$$$$$$$$$ data fetched: ", data)
         if not self.valid[idx]:
@@ -239,7 +243,8 @@ class DCache(SetAssociateCache):
             self.cache[idx+1][block_offset] = data
             return 1
 
-        new_data = self.chip.update_get_data_for_d_cache(old_address, block_offset, data)
+        new_data = self.chip.update_get_data_for_d_cache(
+            old_address, block_offset, data)
 
         if not self.valid[idx]:
             self.valid[idx] = True
@@ -286,6 +291,7 @@ class DCache(SetAssociateCache):
 #c = ICache(4, 4)
 # print(c.get_index_bits())
 # print(c.get_byte_offset())
+
 
 class DCacheInfo:
 

@@ -18,7 +18,7 @@ class Instruction():
         self.d_cache_hit = False
 
         self.assigned_index = 0
-        
+
     def __repr__(self):
         return self.print_instr(is_print=False)
 
@@ -66,6 +66,7 @@ class Instruction():
     def is_branch_instr(self):
         return self.inst_str == constants.BNE_INSTR or self.inst_str == constants.BEQ_INSTR or self.inst_str == constants.J_INSTR
 
+
 class LWInstr(Instruction):
     def __init__(self, args, have_label=None):
         super().__init__()
@@ -97,7 +98,7 @@ class LWInstr(Instruction):
     def get_r3(self):
         return -1
 
-    
+
 class SWInstr(Instruction):
     def __init__(self, args, have_label=None):
         super().__init__()
@@ -124,7 +125,7 @@ class SWInstr(Instruction):
 
     def get_r2(self):
         open_ind, clos_ind = self.dest_op.index("("), self.dest_op.index(")")
-        return int(self.dest_op[open_ind+2 : clos_ind])
+        return int(self.dest_op[open_ind+2: clos_ind])
 
     def get_r3(self):
         return -1
@@ -150,6 +151,7 @@ class LDInstr(Instruction):
             self.dest_op[open_ind+2: clos_ind])]) // 4], int(self.dest_op[:open_ind]),  chip.cpu.gpr[int(self.dest_op[open_ind+2: clos_ind]) - 1], chip.main_memory[66]))
         chip.cpu.fpr[int(self.src_op[1])-1] = chip.main_memory[(int(self.dest_op[:open_ind]
                                                                     ) + chip.cpu.gpr[int(self.dest_op[open_ind+2: clos_ind]) - 1]) // 4]
+
     def get_r1(self):
         return int(self.src_op[1:])
 
@@ -159,6 +161,7 @@ class LDInstr(Instruction):
 
     def get_r3(self):
         return -1
+
 
 class SDInstr(Instruction):
     def __init__(self, args, have_label=None):
@@ -190,7 +193,6 @@ class SDInstr(Instruction):
 
     def get_r3(self):
         return -1
-
 
 
 class ADDDInstr(Instruction):
@@ -250,6 +252,7 @@ class SUBDInstr(Instruction):
     def get_r3(self):
         return int(self.third_op[1:])
 
+
 class MULDInstr(Instruction):
     def __init__(self, args, have_label=None):
         super().__init__()
@@ -278,6 +281,7 @@ class MULDInstr(Instruction):
     def get_r3(self):
         return int(self.third_op[1:])
 
+
 class DIVDInstr(Instruction):
     def __init__(self, args, have_label=None):
         super().__init__()
@@ -305,7 +309,6 @@ class DIVDInstr(Instruction):
 
     def get_r3(self):
         return int(self.third_op[1:])
-
 
 
 class DADDInstr(Instruction):
@@ -337,7 +340,6 @@ class DADDInstr(Instruction):
         return int(self.third_op[1:])
 
 
-
 class DADDIInstr(Instruction):
     def __init__(self, args, have_label=None):
         super().__init__()
@@ -365,6 +367,7 @@ class DADDIInstr(Instruction):
 
     def get_r3(self):
         return -1
+
 
 class DSUBInstr(Instruction):
     def __init__(self, args, have_label=None):
@@ -394,6 +397,7 @@ class DSUBInstr(Instruction):
     def get_r3(self):
         return int(self.third_op[1:])
 
+
 class DSUBIInstr(Instruction):
     def __init__(self, args, have_label=None):
         super().__init__()
@@ -421,6 +425,7 @@ class DSUBIInstr(Instruction):
 
     def get_r3(self):
         return -1
+
 
 class ANDInstr(Instruction):
     def __init__(self, args, have_label=None):
@@ -450,6 +455,7 @@ class ANDInstr(Instruction):
     def get_r3(self):
         return int(self.third_op[1:])
 
+
 class ANDIInstr(Instruction):
     def __init__(self, args, have_label=None):
         super().__init__()
@@ -477,6 +483,7 @@ class ANDIInstr(Instruction):
 
     def get_r3(self):
         return -1
+
 
 class ORInstr(Instruction):
     def __init__(self, args, have_label=None):
@@ -506,6 +513,7 @@ class ORInstr(Instruction):
     def get_r3(self):
         return int(self.third_op[1:])
 
+
 class ORIInstr(Instruction):
     def __init__(self, args, have_label=None):
         super().__init__()
@@ -533,6 +541,7 @@ class ORIInstr(Instruction):
 
     def get_r3(self):
         return -1
+
 
 class LIInstr(Instruction):
     def __init__(self, args, have_label=None):
@@ -563,7 +572,6 @@ class LIInstr(Instruction):
         return -1
 
 
-
 class LUIInstr(Instruction):
     def __init__(self, args, have_label=None):
         super().__init__()
@@ -592,6 +600,7 @@ class LUIInstr(Instruction):
     def get_r3(self):
         return -1
 
+
 class HLTInstr(Instruction):
     def __init__(self):
         super().__init__()
@@ -614,6 +623,7 @@ class HLTInstr(Instruction):
 
     def get_r3(self):
         return -1
+
 
 class BEQInstr(Instruction):
     def __init__(self, args, have_label=None):
@@ -639,6 +649,7 @@ class BEQInstr(Instruction):
 
     def get_r3(self):
         return -1
+
 
 class BNEInstr(Instruction):
     def __init__(self, args, have_label=None):

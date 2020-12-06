@@ -19,17 +19,16 @@ class FUnit:
     def execute(self):
         raise NotImplementedError
 
-
     def set_occupied(self, val):
         self.occupied = val
-    
+
     def is_occupied(self):
         return self.occupied
 
     def add_remain_time(self, time):
         self.remain_time += time
-    
+
     def cleanup(self):
         self.occupied = False
         self.instr = None
-        print("** cleaned up ",self.name)
+        print("** cleaned up ", self.name)
