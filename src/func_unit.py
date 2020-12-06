@@ -1,5 +1,9 @@
 
+'''
 
+    This is the base class for all the functional units inside the CPU.
+    This hols common variables across the FPs
+'''
 class FUnit:
 
     def __init__(self, name, exec_time):

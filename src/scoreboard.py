@@ -41,7 +41,7 @@ class ScoreBoard:
         self.is_fetch_free = False
         self.is_d_cache_hit = False
 
-    def is_et_push(self, current_state):
+    def __check_and_allocate_next_stage(self, current_state):
         self.should_push = False
         if current_state == 0:
             if self.is_next_free:
@@ -330,7 +330,7 @@ class ScoreBoard:
 
         # print()
         if self.finish:
-            self.is_et_push(self.curr_stage)
+            self.__check_and_allocate_next_stage(self.curr_stage)
 
         if self.should_push:
             self.curr_stage = self.next_stage

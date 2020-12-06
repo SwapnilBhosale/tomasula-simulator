@@ -89,7 +89,7 @@ class DCache(Cache):
             self.hits += 1
             return DCacheInfo(self.cache[idx+1][block_offset], 1)
 
-        data = self.memory.fetch_data(temp)
+        data = self.memory.get_data(temp)
         print("########################### $$$$$$$$$$$$$$$$$$$$$$ data fetched: ", data)
         if not self.valid[idx]:
             self.valid[idx] = True
@@ -113,7 +113,7 @@ class DCache(Cache):
             extra_cycle = 0
             if self.dirty[idx]:
                 extra_cycle = 12
-                self.memory.update_data(temp, self.cache[idx])
+                self.memory.update_memory_data(temp, self.cache[idx])
             self.dirty[idx] = False
             self.tag[idx] = address
             for i in range(len(data)):
@@ -125,7 +125,7 @@ class DCache(Cache):
             extra_cycle = 0
             if self.dirty[idx+1]:
                 extra_cycle = 12
-                self.memory.update_data(temp, self.cache[idx])
+                self.memory.update_memory_data(temp, self.cache[idx])
             self.dirty[idx+1] = False
             self.tag[idx+1] = address
             for i in range(len(data)):
@@ -145,7 +145,7 @@ class DCache(Cache):
 
         idx = set_no * self.no_of_sets
         temp_lru_cnt = [False] * 4
-        self.memory.update_sw_data(temp, data)
+        self.memory.update_store_instruction_data(temp, data)
 
         temp_lru_cnt[idx] = self.lru_cnt[idx]
         temp_lru_cnt[idx+1] = self.lru_cnt[idx+1]
@@ -162,7 +162,7 @@ class DCache(Cache):
             self.cache[idx+1][block_offset] = data
             return 1
 
-        data = self.memory.update_get_data(temp, block_offset, data)
+        data = self.memory.update_and_get_data(temp, block_offset, data)
 
         if not self.valid[idx]:
             self.valid[idx] = True
@@ -187,7 +187,7 @@ class DCache(Cache):
             extra_cycle = 0
             if self.dirty[idx]:
                 extra_cycle = 12
-                self.memory.update_data(temp, self.cache[idx])
+                self.memory.update_memory_data(temp, self.cache[idx])
             self.dirty[idx] = False
             self.tag[idx] = addr
             for i in range(len(data)):
@@ -199,7 +199,7 @@ class DCache(Cache):
             extra_cycle = 0
             if self.dirty[idx+1]:
                 extra_cycle = 12
-                self.memory.update_data(temp, self.cache[idx])
+                self.memory.update_memory_data(temp, self.cache[idx])
             self.dirty[idx+1] = False
             self.tag[idx] = addr
             for i in range(len(data)):

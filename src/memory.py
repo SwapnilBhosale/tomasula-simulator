@@ -1,7 +1,10 @@
 import utils
 import constants
 
-
+'''
+    This class represents the Main Memory of the System
+    This stores the data loaded for the data file in the argument
+'''
 class Memory:
 
     def __init__(self, data_file):
@@ -28,24 +31,24 @@ class Memory:
                     curr_block[i % 4] = int_val
             #print("curr_blocm: ",curr_block)
 
-    def fetch_data(self, addr):
+    def get_data(self, addr):
         idx = (addr - self.start_addr) // 4
         idx = idx // 4
         return self.data[idx]
 
-    def update_get_data(self, addr, offset, data):
+    def update_and_get_data(self, addr, offset, data):
         idx = (addr - self.start_addr) // 4
         idx = idx // 4
         temp = self.data[idx]
         temp[offset] = data
         return temp
 
-    def update_data(self, addr, data):
+    def update_memory_data(self, addr, data):
         idx = (addr - self.start_addr) // 4
         idx = idx // 4
         self.data[idx] = data
 
-    def update_sw_data(self, addr, data):
+    def update_store_instruction_data(self, addr, data):
         idx = (addr - self.start_addr) // 4
         idx1 = idx // 4
         offset = idx % 4
